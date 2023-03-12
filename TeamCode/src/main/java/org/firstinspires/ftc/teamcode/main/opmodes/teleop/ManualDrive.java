@@ -53,6 +53,8 @@ public class ManualDrive extends LinearOpMode {
     private GamePadController g1, g2;
 
     private boolean isSlow = false;
+    private boolean slideExtend = false;
+    private boolean armOut = false;
 
     private boolean warning1 = false;
     private boolean warning2 = false;
@@ -115,9 +117,9 @@ public class ManualDrive extends LinearOpMode {
 
             move();
 
-            subsystemOne(); // example
+            intakeControls();
 
-            subsystemTwo(); // example
+            outtakeControls();
 
             warnings();
 
@@ -158,12 +160,66 @@ public class ManualDrive extends LinearOpMode {
         roadrunner.setDrivePower(new Pose2d(input_x, input_y, input_turn));
     }
 
-    private void subsystemOne() { // TODO: Implement
-        // E.g. intake related things
+    private void intakeControls() {
+        if (g1.start() && !slideExtend) { // Start to extend slide
+            intake.extendOut();
+        }
+        if (g1.start() && slideExtend) { // Start to bring in slide
+            intake.extendIn();
+        }
+        if (g1.xOnce() && !armOut) { // X to put out arm and claw
+            if (slideExtend) {
+                intake.extendOut();
+            }
+            intake.armOut();
+            intake.clawOpen();
+            armOut = true;
+        }
+        if (g1.xOnce() && armOut) { // X to bring in arm and claw
+            intake.extendIn();
+            intake.armTransfer();
+            intake.clawClosed();
+            armOut = false;
+        }
+        if (g1.yOnce()) { // Y to transfer
+            intake.extendIn();
+            intake.armTransfer();
+        }
+        if (g1.aOnce()) { // A to grab
+            intake.clawClosed();
+        }
+        if (g1.bOnce()) { // B to let go
+            intake.clawOpen();
+        }
     }
 
-    private void subsystemTwo() { // TODO: Implement
-        // E.g. outtake related things
+    private void outtakeControls() {
+        if (g2.dpadUpOnce()) { // Dpad up to raise high
+            outtake.raiseHigh();
+        }
+        if (g2.dpadRightOnce()) { // Dpad right to raise mid
+            outtake.raiseMid();
+        }
+        if (g2.dpadDownOnce()) { // Dpad down to raise low
+            outtake.raiseLow();
+        }
+        if (g2.dpadLeftOnce()) { // Dpad left to slightly lower slide (good for aiming)
+            outtake.offsetSlide();
+        }
+        if (g2.bOnce()) { // B to store slide
+            outtake.latchOpen();
+            // TODO: Wait
+            outtake.store();
+        }
+        if (g2.rightBumperOnce()) { // Right bumper to point turret right
+            outtake.turretRight();
+        }
+        if (g2.rightBumperOnce()) { // Left bumper to point turret left
+            outtake.turretLeft();
+        }
+        if (g2.xOnce()) { // X to center turret
+            outtake.turretCenter();
+        }
     }
 
     private double timeLeft() {
