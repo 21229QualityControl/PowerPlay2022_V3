@@ -10,7 +10,9 @@ import org.firstinspires.ftc.teamcode.main.subsystems.Dashboard;
 import org.firstinspires.ftc.teamcode.main.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.main.subsystems.GamePadController;
 import org.firstinspires.ftc.teamcode.main.subsystems.Hub;
+import org.firstinspires.ftc.teamcode.main.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Memory;
+import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
 
 import java.util.List;
@@ -45,6 +47,8 @@ public class ManualDrive extends LinearOpMode {
     private Drivetrain drivetrain;
     private Roadrunner roadrunner;
     private Hub hub;
+    private Intake intake;
+    private Outtake outtake;
 
     private GamePadController g1, g2;
 
@@ -67,6 +71,8 @@ public class ManualDrive extends LinearOpMode {
         drivetrain = new Drivetrain(hardwareMap, hub);
         roadrunner = new Roadrunner(hardwareMap, hub, drivetrain);
         roadrunner.setPoseEstimate(Memory.LAST_POSE);
+        outtake = new Outtake(hardwareMap);
+        intake = new Intake(hardwareMap);
 
         drivetrain.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -118,6 +124,8 @@ public class ManualDrive extends LinearOpMode {
             sendTelemetry();
 
             roadrunner.update();
+            outtake.update();
+            intake.update();
         }
 
         // On termination

@@ -10,7 +10,9 @@ import org.firstinspires.ftc.teamcode.main.subsystems.Dashboard;
 import org.firstinspires.ftc.teamcode.main.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.main.subsystems.GamePadController;
 import org.firstinspires.ftc.teamcode.main.subsystems.Hub;
+import org.firstinspires.ftc.teamcode.main.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Memory;
+import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
 import org.firstinspires.ftc.teamcode.main.subsystems.Vision;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
@@ -22,6 +24,8 @@ public abstract class AutoBase extends LinearOpMode {
     protected Roadrunner rr;
     protected Hub hub;
     protected Vision vision;
+    protected Intake intake;
+    protected Outtake outtake;
 
     // controllers. WARNING: you are not supposed to touch the robot/controllers after init
     private GamePadController g1;
@@ -53,6 +57,8 @@ public abstract class AutoBase extends LinearOpMode {
         this.drivetrain = new Drivetrain(hardwareMap, hub);
         this.rr = new Roadrunner(hardwareMap,hub, drivetrain);
         this.vision = new Vision(hardwareMap);
+        this.outtake = new Outtake(hardwareMap);
+        this.intake = new Intake(hardwareMap);
 
         // setup gamepad controls
         g1 = new GamePadController(gamepad1);
@@ -235,6 +241,8 @@ public abstract class AutoBase extends LinearOpMode {
      * Iterative method for each follower update call (not for updatePoseEstimate())
      */
     protected void update() {
+        outtake.update();
+        intake.update();
         Dashboard.packet.put("Runtime", getRuntime());
     }
 
@@ -243,11 +251,25 @@ public abstract class AutoBase extends LinearOpMode {
     protected abstract Pose2d getStartPose();
     protected abstract void printDescription();
 
+    // Steps for auto
+    protected abstract void moveToJunction();
+    protected abstract void park();
+    protected void cycle() {
+        // TODO: Cycling code
+    }
+
     // Run methods to override
     protected void onInit() {}
     protected void onInitLoop() {}
     protected void onStart() {}
-    protected abstract void onRun();
+    protected void onRun() {
+        outtake.initialize();
+        intake.initialize();
+
+        moveToJunction();
+        cycle();
+        park();
+    };
     protected void onEnd() {}
     protected void onEndLoop() {}
 

@@ -27,13 +27,7 @@ public class AutoSimpleRedLeft_SharedPreload_Park extends AutoBase {
     }
 
     @Override
-    protected void onRun() {
-        step1();
-
-        park();
-    }
-
-    private void step1() {
+    protected void moveToJunction() {
         Log.d("Autonomous", String.format("step1() Start %.3f", getRuntime()));
         follow(builder()
                 .executeSync(() -> {
@@ -43,7 +37,8 @@ public class AutoSimpleRedLeft_SharedPreload_Park extends AutoBase {
         Log.d("Autonomous", String.format("step1() Ended %.3f", getRuntime()));
     }
 
-    private void park() {
+    @Override
+    protected void park() {
         Log.d("Autonomous", String.format("park() Start %.3f", getRuntime()));
         // park code
         Log.d("Autonomous", String.format("park() Ended %.3f", getRuntime()));
