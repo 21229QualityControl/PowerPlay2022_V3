@@ -7,13 +7,15 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
 import org.firstinspires.ftc.teamcode.util.hardware.MotorWithPID;
+import org.firstinspires.ftc.teamcode.util.hardware.OppositeMotorWithPID;
 
 @Config
 public class Outtake {
-    private MotorWithPID slide;
+    private OppositeMotorWithPID slide;
     private MotorWithPID turret;
     private Servo latch;
     private Servo arm;
+    private Servo guide;
 
     public static PIDCoefficients TURRET_PID = new PIDCoefficients(0.007, 0, 0.0003);
     public static int TURRET_LEFT = 0;
@@ -33,10 +35,14 @@ public class Outtake {
     public static double LATCH_OPEN;
     public static double LATCH_CLOSED;
 
+    public static double GUIDE_OUT;
+    public static double GUIDE_IN;
+
     public Outtake(HardwareMap hardwareMap) {
         this.turret = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "turret"), TURRET_PID);
-        this.slide = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtake"), SLIDE_PID);
+        this.slide = new OppositeMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtake"), HardwareCreator.createMotor(hardwareMap, "outtakeOpposite"), SLIDE_PID);
         this.latch = HardwareCreator.createServo(hardwareMap, "latch", HardwareCreator.ServoType.DEFAULT);
+        this.guide = HardwareCreator.createServo(hardwareMap, "guide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
     }
 
@@ -94,14 +100,24 @@ public class Outtake {
         turret.setTargetPosition(TURRET_RIGHT);
     }
 
+    // Guide
+    public void guideIn() {
+        guide.setPosition(GUIDE_IN);
+    }
+    public void guideOut() {
+        guide.setPosition(GUIDE_OUT);
+    }
+
     // Shortcuts
     public void store() {
         armTransfer();
         slideStore();
+        guideIn();
     }
     private void raisePrep() {
         latchClosed();
         armOut();
+        guideOut();
     }
     public void raiseLow() {
         raisePrep();
