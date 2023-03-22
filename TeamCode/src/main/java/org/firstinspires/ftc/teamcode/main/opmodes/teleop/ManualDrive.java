@@ -92,6 +92,10 @@ public class ManualDrive extends LinearOpMode {
             telemetry.update();
         }
 
+        // Init
+        outtake.initialize();
+        intake.initialize();
+
         // Transition, starts when g1 does an input. WARNING: May cause more user error than starting at the timer
         g1.update();
         while (START_ON_INPUT && g1.atRest() && opModeIsActive()) {
@@ -143,6 +147,8 @@ public class ManualDrive extends LinearOpMode {
         telemetry.addData("Pos", roadrunner.getPoseEstimate());
         telemetry.addData("Vel", roadrunner.getPoseVelocity());
         telemetry.addData("Power", "\n   %4.0f%% | %4.0f%% \n   %4.0f%% | %4.0f%%", vels.get(0)*100, vels.get(3)*100, vels.get(1)*100, vels.get(2)*100);
+
+        telemetry.addData("Debug: Arm Out", armOut);
         telemetry.update();
     }
 
@@ -167,23 +173,30 @@ public class ManualDrive extends LinearOpMode {
         if (g1.start() && slideExtend) { // Start to bring in slide
             intake.extendIn();
         }
-        if (g1.xOnce() && !armOut) { // X to put out arm and claw
-            if (slideExtend) {
-                intake.extendOut();
+        if (g1.xOnce()) {
+            if (armOut) { // X to bring in arm and claw
+                intake.extendIn();
+                intake.armStore();
+                intake.clawClosed();
+                intake.slideDown();
+                armOut = false;
+            } else { // X to put out arm and claw
+                if (slideExtend) {
+                    intake.extendOut();
+                }
+                intake.armOut();
+                intake.clawOpen();
+                intake.slideDown();
+                armOut = true;
             }
-            intake.armOut();
-            intake.clawOpen();
-            armOut = true;
-        }
-        if (g1.xOnce() && armOut) { // X to bring in arm and claw
-            intake.extendIn();
-            intake.armTransfer();
-            intake.clawClosed();
-            armOut = false;
         }
         if (g1.yOnce()) { // Y to transfer
             intake.extendIn();
             intake.armTransfer();
+            intake.slideUp();
+            intake.extendTransfer();
+            outtake.armTransfer();
+            outtake.turretCenter();
         }
         if (g1.aOnce()) { // A to grab
             intake.clawClosed();
@@ -206,15 +219,19 @@ public class ManualDrive extends LinearOpMode {
         if (g2.dpadLeftOnce()) { // Dpad left to slightly lower slide (good for aiming)
             outtake.offsetSlide();
         }
-        if (g2.bOnce()) { // B to store slide
+        if (g2.bOnce()) { // B to score
             outtake.latchOpen();
-            // TODO: Wait
-            outtake.store();
+            outtake.guideIn();
+            new Thread(() -> { // TODO: Better wait solution
+                sleep(150);
+                outtake.store();
+                outtake.turretCenter();
+            }).start();
         }
         if (g2.rightBumperOnce()) { // Right bumper to point turret right
             outtake.turretRight();
         }
-        if (g2.rightBumperOnce()) { // Left bumper to point turret left
+        if (g2.leftBumperOnce()) { // Left bumper to point turret left
             outtake.turretLeft();
         }
         if (g2.xOnce()) { // X to center turret

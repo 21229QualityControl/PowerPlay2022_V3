@@ -5,7 +5,6 @@ import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 
 import kotlin.jvm.functions.Function2;
 
@@ -19,7 +18,7 @@ public class OppositeMotorWithPID {
     private int tolerance = 10;
     private double maxPower = 0;
 
-    public OppositeMotorWithPID(DcMotorEx motor,  DcMotorEx oppositeMotor, PIDCoefficients pid) {
+    public OppositeMotorWithPID(DcMotorEx motor, DcMotorEx oppositeMotor, PIDCoefficients pid) {
         this(motor, oppositeMotor, pid, (x, v) -> 0.0);
     }
 
@@ -32,7 +31,6 @@ public class OppositeMotorWithPID {
 
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         oppositeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        oppositeMotor.setDirection(Direction.REVERSE);
     }
 
     public DcMotorEx getMotor() {

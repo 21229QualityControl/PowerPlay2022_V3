@@ -18,25 +18,25 @@ public class Outtake {
     private Servo guide;
 
     public static PIDCoefficients TURRET_PID = new PIDCoefficients(0.007, 0, 0.0003);
-    public static int TURRET_LEFT = 0;
-    public static int TURRET_RIGHT = 0;
-    public static int TURRET_CENTER = 0;
+    public static int TURRET_LEFT = 300;
+    public static int TURRET_RIGHT = -300;
+    public static int TURRET_CENTER = 0; // Initialize with turret centered
 
     public static PIDCoefficients SLIDE_PID = new PIDCoefficients(0.015, 0, 0.0004);
-    public static int SLIDE_HIGH = 0;
-    public static int SLIDE_MID = 0;
-    public static int SLIDE_LOW = 0;
+    public static int SLIDE_HIGH = 920; // 920 is highest position
+    public static int SLIDE_MID = 400;
+    public static int SLIDE_LOW = 100;
     public static int SLIDE_STORED = 0;
     public static int SLIDE_OFFSET = 0;
 
-    public static double ARM_OUT;
-    public static double ARM_TRANSFER;
+    public static double ARM_OUT = 0; // This is actually 0
+    public static double ARM_TRANSFER = 0.55;
 
-    public static double LATCH_OPEN;
-    public static double LATCH_CLOSED;
+    public static double LATCH_OPEN = 0.5;
+    public static double LATCH_CLOSED = 0.84;
 
-    public static double GUIDE_OUT;
-    public static double GUIDE_IN;
+    public static double GUIDE_OUT = 0.4;
+    public static double GUIDE_IN = 0.7;
 
     public Outtake(HardwareMap hardwareMap) {
         this.turret = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "turret"), TURRET_PID);
