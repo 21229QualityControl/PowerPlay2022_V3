@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.main.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -15,13 +16,13 @@ public class Intake {
     private Servo claw;
     private Servo slide;
 
-    public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.015, 0, 0.0004);
+    public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.013, 0, 0.0001);
     public static int EXTENDER_IN = 0;
-    public static int EXTENDER_OUT = 0;
-    public static int EXTENDER_TRANSFER = 0;
+    public static int EXTENDER_OUT = 200;
+    public static int EXTENDER_TRANSFER = 30;
 
     public static double ARM_TRANSFER = 0; // This is actually 0
-    public static double ARM_OUT = 0.41;
+    public static double ARM_OUT = 0.42;
     public static double ARM_STORE = 0.1;
 
     public static double CLAW_OPEN = 0;
@@ -32,6 +33,7 @@ public class Intake {
 
     public Intake(HardwareMap hardwareMap) {
         this.extender = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "extender"), EXTENDER_PID);
+        this.extender.getMotor().setDirection(DcMotorSimple.Direction.REVERSE);
         this.arm = HardwareCreator.createServo(hardwareMap, "arm", HardwareCreator.ServoType.AXON);
         this.claw = HardwareCreator.createServo(hardwareMap, "claw", HardwareCreator.ServoType.AXON);
         this.slide = HardwareCreator.createServo(hardwareMap, "intakeSlide", HardwareCreator.ServoType.AXON);

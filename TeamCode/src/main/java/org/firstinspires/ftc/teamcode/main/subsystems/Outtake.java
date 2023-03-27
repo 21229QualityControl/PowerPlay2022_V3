@@ -23,7 +23,7 @@ public class Outtake {
     public static int TURRET_CENTER = 0; // Initialize with turret centered
 
     public static PIDCoefficients SLIDE_PID = new PIDCoefficients(0.015, 0, 0.0004);
-    public static int SLIDE_HIGH = 920; // 920 is highest position
+    public static int SLIDE_HIGH = 880; // 900 is highest position
     public static int SLIDE_MID = 400;
     public static int SLIDE_LOW = 100;
     public static int SLIDE_STORED = 0;
@@ -36,8 +36,8 @@ public class Outtake {
     public static double LATCH_CLOSED = 0.84;
 
     public static double GUIDE_OUT = 0.4;
-    public static double GUIDE_IN = 0.7;
-
+    public static double GUIDE_IN = 0.07;
+    public static double GUIDE_DOWN = 0.7;
     public Outtake(HardwareMap hardwareMap) {
         this.turret = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "turret"), TURRET_PID);
         this.slide = new OppositeMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtake"), HardwareCreator.createMotor(hardwareMap, "outtakeOpposite"), SLIDE_PID);
@@ -107,12 +107,17 @@ public class Outtake {
     public void guideOut() {
         guide.setPosition(GUIDE_OUT);
     }
+    // Only needed for initialization stuff
+    public void guideDown() {
+        guide.setPosition(GUIDE_DOWN);
+    }
 
     // Shortcuts
     public void store() {
         armTransfer();
         slideStore();
         guideIn();
+        latchOpen();
     }
     private void raisePrep() {
         latchClosed();
