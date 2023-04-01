@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.main.subsystems.GamePadController;
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
 
 /**
@@ -29,12 +30,14 @@ public class ServoTest extends LinearOpMode {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        Servo servo = HardwareCreator.createServo(hardwareMap, NAME);
+        Servo servo = HardwareCreator.createServo(hardwareMap, NAME, SERVO_TYPE);
 
         if (REVERSED) servo.setDirection(Servo.Direction.REVERSE);
         else servo.setDirection(Servo.Direction.FORWARD);
 
-        HardwareCreator.setServoRange(servo, SERVO_TYPE);
+        servo.scaleRange(Math.min(MIN, MAX), Math.max(MIN, MAX));
+
+        GamePadController g1 = new GamePadController(gamepad1);
 
         telemetry.addData("Instructions", "This program is dependent on the dashboard and its variable config");
         telemetry.addData("Servo name", NAME);
@@ -55,10 +58,16 @@ public class ServoTest extends LinearOpMode {
                 CHANGE_RANGE = false;
             }
 
+            POSITION += (gamepad1.right_trigger - gamepad1.left_trigger) / 1000;
+            if (g1.dpadUpOnce()) POSITION += 0.01;
+            if (g1.dpadDownOnce()) POSITION -= 0.01;
+
             servo.setPosition(POSITION);
 
             telemetry.addData("Position", servo.getPosition());
             telemetry.update();
+
+            g1.update();
         }
     }
 }

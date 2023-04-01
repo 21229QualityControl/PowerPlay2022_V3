@@ -25,7 +25,7 @@ public class MotorTest extends LinearOpMode {
     public static double VELOCITY = 0;
     public static int POSITION = 0;
     public static double POWER = 0;
-    public static MotorPIDValues PID = new MotorPIDValues();
+//    public static MotorPIDValues PID = new MotorPIDValues();
 
     public enum Mode {
         Power,
@@ -98,11 +98,11 @@ public class MotorTest extends LinearOpMode {
         }
     }
 
-    public static class MotorPIDValues {
-        public double POS_P = 0; // don't use
-        public double VEL_P = 12;
-        public double VEL_I = 0.9;
-        public double VEL_D = 0;
-        public double VEL_F = 0;
-    }
+//    public static class MotorPIDValues {
+//        public double POS_P = 0; // don't use
+//        public double VEL_P = 12;
+//        public double VEL_I = 0.9;
+//        public double VEL_D = 0;
+//        public double VEL_F = 0;
+//    }
 }
