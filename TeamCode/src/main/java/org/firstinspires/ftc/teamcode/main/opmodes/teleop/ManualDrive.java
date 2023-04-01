@@ -192,11 +192,16 @@ public class ManualDrive extends LinearOpMode {
         }
         if (g1.yOnce()) { // Y to transfer
             intake.extendIn();
-            intake.armTransfer();
-            intake.slideUp();
+            intake.clawClosed();
             intake.extendTransfer();
-            outtake.armTransfer();
             outtake.turretCenter();
+            outtake.armTransfer();
+            intake.slideUp();
+
+            new Thread(() -> { // TODO: Better wait solution
+                sleep(500);
+                intake.armTransfer();
+            }).start();
         }
         if (g1.aOnce()) { // A to grab
             intake.clawClosed();
@@ -206,36 +211,79 @@ public class ManualDrive extends LinearOpMode {
         }
     }
 
+    enum TURRET_POS {
+        LEFT,
+        CENTER,
+        RIGHT,
+    }
+    public static TURRET_POS turretPos = TURRET_POS.CENTER;
+
+    private void moveTurret() {
+        switch (turretPos) {
+            case LEFT:
+                outtake.turretLeft();
+                break;
+
+            case RIGHT:
+                outtake.turretRight();
+                break;
+
+            case CENTER:
+                outtake.turretCenter();
+                break;
+        }
+    }
+
     private void outtakeControls() {
         if (g2.dpadUpOnce()) { // Dpad up to raise high
+            intake.armStore();
+            intake.slideDown();
+            armOut = false;
+
+            moveTurret();
             outtake.raiseHigh();
         }
         if (g2.dpadRightOnce()) { // Dpad right to raise mid
+            intake.armStore();
+            intake.slideDown();
+            armOut = false;
+
+            moveTurret();
             outtake.raiseMid();
         }
         if (g2.dpadDownOnce()) { // Dpad down to raise low
+            intake.armStore();
+            intake.slideDown();
+            armOut = false;
+
+            moveTurret();
             outtake.raiseLow();
         }
         if (g2.dpadLeftOnce()) { // Dpad left to slightly lower slide (good for aiming)
+            intake.armStore();
+            intake.slideDown();
+            armOut = false;
+
             outtake.offsetSlide();
         }
         if (g2.bOnce()) { // B to score
             outtake.latchOpen();
-            outtake.guideIn();
+            outtake.guideDown();
             new Thread(() -> { // TODO: Better wait solution
                 sleep(150);
                 outtake.store();
                 outtake.turretCenter();
+                outtake.guideIn();
             }).start();
         }
         if (g2.rightBumperOnce()) { // Right bumper to point turret right
-            outtake.turretRight();
+            turretPos = TURRET_POS.RIGHT;
         }
         if (g2.leftBumperOnce()) { // Left bumper to point turret left
-            outtake.turretLeft();
+            turretPos = TURRET_POS.LEFT;
         }
         if (g2.xOnce()) { // X to center turret
-            outtake.turretCenter();
+            turretPos = TURRET_POS.RIGHT;
         }
     }
 

@@ -19,7 +19,7 @@ public class Intake {
     public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.013, 0, 0.0001);
     public static int EXTENDER_IN = 0;
     public static int EXTENDER_OUT = 200;
-    public static int EXTENDER_TRANSFER = 30;
+    public static int EXTENDER_TRANSFER = 75;
 
     public static double ARM_TRANSFER = 0; // This is actually 0
     public static double ARM_OUT = 0.42;
@@ -29,7 +29,7 @@ public class Intake {
     public static double CLAW_CLOSED = 0.2;
 
     public static double SLIDE_UP = 0.5;
-    public static double SLIDE_DOWN = 0.36;
+    public static double SLIDE_DOWN = 0.31;
 
     public Intake(HardwareMap hardwareMap) {
         this.extender = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "extender"), EXTENDER_PID);
