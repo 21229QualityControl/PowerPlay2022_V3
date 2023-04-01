@@ -21,9 +21,10 @@ public class Intake {
     public static int EXTENDER_OUT = 200;
     public static int EXTENDER_TRANSFER = 75;
 
-    public static double ARM_TRANSFER = 0; // This is actually 0
+    public static double ARM_TRANSFER = 0.3;
     public static double ARM_OUT = 0.42;
-    public static double ARM_STORE = 0.1;
+    public static double ARM_STORE = 0.3;
+    public static double ARM_MAX = 0.61;
 
     public static double CLAW_OPEN = 0;
     public static double CLAW_CLOSED = 0.2;
