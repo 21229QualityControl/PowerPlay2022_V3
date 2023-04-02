@@ -8,9 +8,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import kotlin.jvm.functions.Function2;
 
-public class OppositeMotorWithPID {
-    private DcMotorEx motor;
-    private DcMotorEx oppositeMotor;
+public class DualMotorWithPID {
+    private DcMotorEx motorWithEncoder;
+    private DcMotorEx secondMotor;
     private PIDFController pidfController;
     private PIDCoefficients pid;
     private int targetPosition = 0;
@@ -18,36 +18,43 @@ public class OppositeMotorWithPID {
     private int tolerance = 10;
     private double maxPower = 1e-8; // zero does not work
 
-    public OppositeMotorWithPID(DcMotorEx motor, DcMotorEx oppositeMotor, PIDCoefficients pid) {
-        this(motor, oppositeMotor, pid, (x, v) -> 0.0);
+    private final boolean invertSecondMotor;
+
+    public DualMotorWithPID(DcMotorEx motorWithEncoder, DcMotorEx secondMotor, boolean invertSecondMotor, PIDCoefficients pid) {
+        this(motorWithEncoder, secondMotor, invertSecondMotor, pid, (x, v) -> 0.0);
     }
 
-    public OppositeMotorWithPID(DcMotorEx motor, DcMotorEx oppositeMotor, PIDCoefficients pid, Function2<Double, Double, Double> f) {
-        this.motor = motor;
-        this.oppositeMotor = oppositeMotor;
+    public DualMotorWithPID(DcMotorEx motorWithEncoder, DcMotorEx secondMotor, boolean invertSecondMotor, PIDCoefficients pid, Function2<Double, Double, Double> f) {
+        this.motorWithEncoder = motorWithEncoder;
+        this.secondMotor = secondMotor;
+        this.invertSecondMotor = invertSecondMotor;
         this.pid = pid;
         this.pidfController = new PIDFController(pid, 0, 0, 0, f);
         this.pidfController.setOutputBounds(-maxPower, maxPower);
 
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        oppositeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // copy direction onto second motor
+        setDirection(motorWithEncoder.getDirection());
+
+        motorWithEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        secondMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public DcMotorEx getMotor() {
-        return motor;
+    public DcMotorEx getMainMotor() {
+        return motorWithEncoder;
     }
 
-    public DcMotorEx getOppositeMotor() {
-        return oppositeMotor;
+    public DcMotorEx getSecondMotor() {
+        return secondMotor;
     }
 
     /**
      * Updates the power sent to the motor according to the pidf controller.
      */
     public void update() {
-        double newPower = this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity());
-        motor.setPower(newPower);
-        oppositeMotor.setPower(-newPower);
+        double newPower = this.pidfController.update(motorWithEncoder.getCurrentPosition(), motorWithEncoder.getVelocity());
+//        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
+        motorWithEncoder.setPower(newPower);
+        secondMotor.setPower(newPower);
     }
 
     /**
@@ -72,7 +79,7 @@ public class OppositeMotorWithPID {
      */
     public void setTargetPosition(int position) {
         this.targetPosition = position;
-        this.pidfController.setTargetPosition(position + internalOffset);
+        this.pidfController.setTargetPosition(position - internalOffset); // TODO: Verify sign
     }
 
     /**
@@ -80,7 +87,16 @@ public class OppositeMotorWithPID {
      * @return the current reading of the encoder for this motor
      */
     public int getCurrentPosition() {
-        return motor.getCurrentPosition() + internalOffset;
+        return motorWithEncoder.getCurrentPosition() + internalOffset;
+    }
+
+    public void zeroMotorInternals() {
+        motorWithEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorWithEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void resetIntegralGain() {
+        this.pidfController.reset();
     }
 
     /**
@@ -104,7 +120,7 @@ public class OppositeMotorWithPID {
      * @return the current velocity of the motor
      */
     public double getVelocity() {
-        return motor.getVelocity();
+        return motorWithEncoder.getVelocity();
     }
 
     /**
@@ -129,7 +145,15 @@ public class OppositeMotorWithPID {
      * @return the current level of the motor, a value in the interval [-1.0, 1.0]
      */
     public double getPower() {
-        return motor.getPower();
+        return motorWithEncoder.getPower();
+    }
+
+    /**
+     * Sets the motor power to zero
+     */
+    public void stopMotor() {
+        motorWithEncoder.setPower(0);
+        secondMotor.setPower(0);
     }
 
     /**
@@ -137,8 +161,8 @@ public class OppositeMotorWithPID {
      * @param direction the direction to set for this motor
      */
     public void setDirection(DcMotorSimple.Direction direction) {
-        motor.setDirection(direction);
-        oppositeMotor.setDirection(direction.inverted());
+        motorWithEncoder.setDirection(direction);
+        secondMotor.setDirection(invertSecondMotor ? direction.inverted() : direction);
     }
 
     /**
@@ -146,7 +170,7 @@ public class OppositeMotorWithPID {
      * @param currentPosition the position to remap as
      */
     public void setCurrentPosition(int currentPosition) {
-        this.internalOffset = currentPosition - motor.getCurrentPosition(); // raw + offset = current
+        this.internalOffset = currentPosition - motorWithEncoder.getCurrentPosition(); // raw + offset = current
     }
 
     /**

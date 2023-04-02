@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
-import org.firstinspires.ftc.teamcode.util.hardware.OppositeMotorWithPID;
+import org.firstinspires.ftc.teamcode.util.hardware.DualMotorWithPID;
 
 /**
  * This is a simple dash based test for motors under our PID controller.
@@ -31,18 +31,17 @@ public class DualMotorPIDTest extends LinearOpMode {
 
     public static boolean RESET_ENCODERS = false;
 
-    private OppositeMotorWithPID motor;
+    private DualMotorWithPID motor;
 
     @Override
     public void runOpMode() throws InterruptedException {
         DcMotorEx rawMotor = HardwareCreator.createMotor(hardwareMap, NAME);
         if (REVERSED) rawMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         else rawMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        motor = new OppositeMotorWithPID(rawMotor, HardwareCreator.createMotor(hardwareMap, OPPOSITE_NAME), pid, (x, v) -> (x > FEEDFORWARD_MIN ? FEEDFORWARD : 0.0));
+        motor = new DualMotorWithPID(rawMotor, HardwareCreator.createMotor(hardwareMap, OPPOSITE_NAME), true, pid, (x, v) -> (x > FEEDFORWARD_MIN ? FEEDFORWARD : 0.0));
 
         if (RESET_ENCODERS) {
-            motor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motor.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.zeroMotorInternals();
         }
 
 
