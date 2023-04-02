@@ -11,13 +11,13 @@ import java.util.concurrent.Executors;
  * Segment that runs code. While being on a separate thread,
  * the main thread will continuously update and wait for this to finish
  */
-public class LinearSyncSegment extends SequenceSegment {
+public class LinearSyncSegment extends StationarySegment {
     private Runnable action;
 
     private ExecutorService executor;
 
-    public LinearSyncSegment(Runnable asyncAction, Pose2d startPose, List<TrajectoryMarker> markers) {
-        super("LINEAR_SYNC", 0, startPose, startPose, markers);
+    public LinearSyncSegment(Runnable asyncAction, Pose2d pose, boolean keepPosition, List<TrajectoryMarker> markers) {
+        super("LINEAR_SYNC", 0, pose, keepPosition, markers);
         this.action = asyncAction;
 
         this.executor = null;
@@ -33,10 +33,5 @@ public class LinearSyncSegment extends SequenceSegment {
         if (executor == null) return false;
 
         return executor.isTerminated();
-    }
-
-    @Override
-    public Pose2d getPose(double time) {
-        return getStartPose();
     }
 }

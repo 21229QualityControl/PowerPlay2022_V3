@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.main.subsystems;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -23,7 +22,6 @@ import java.util.List;
  *
  * Modified from Roadrunner Quickstart's SampleMecanumDrive
  */
-@Config
 public class Drivetrain {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;

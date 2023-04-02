@@ -27,11 +27,14 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+import org.firstinspires.ftc.teamcode.roadrunner.PositionMaintainer;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.StateCopyLocalizer;
+import org.firstinspires.ftc.teamcode.roadrunner.drive.TwoWheelTrackingLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceRunner;
+import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
 
 import java.util.Arrays;
@@ -44,10 +47,14 @@ import java.util.List;
  */
 @Config
 public class Roadrunner extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(5, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(5, 0, 0);
 
-    public static double LATERAL_MULTIPLIER = 1; // TODO: Insert what this number means
+    public static PIDCoefficients KEEP_POSITION_TRANSLATIONAL_PID = new PIDCoefficients(5, 0.5, 0);
+    public static PIDCoefficients KEEP_POSITION_HEADING_PID = new PIDCoefficients(5, 0.5, 0);
+    public static CPose2d KEEP_POSITION_TOLERANCE = new CPose2d(0.12, 0.1, Math.toRadians(1.0));
+
+    public static double LATERAL_MULTIPLIER = 1.3; // reality/expected
 
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
@@ -59,22 +66,25 @@ public class Roadrunner extends MecanumDrive {
     private static final TrajectoryAccelerationConstraint ACCEL_CONSTRAINT = getAccelerationConstraint(DriveConstants.MAX_ACCEL);
 
     private TrajectoryFollower follower;
-    private Hub hub; // TODO: might not need this
+    private PositionMaintainer positionMaintainer;
+    private Hub hub;
     private Drivetrain drivetrain;
 
     public Roadrunner(HardwareMap hardwareMap, Hub hub, Drivetrain drivetrain) {
         super(DriveConstants.kV, DriveConstants.kA, DriveConstants.kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
-                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
+                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.05);
 
-        // TODO: if desired, use setLocalizer() to change the localization method
+        positionMaintainer = new PositionMaintainer(KEEP_POSITION_TRANSLATIONAL_PID, KEEP_POSITION_TRANSLATIONAL_PID, KEEP_POSITION_HEADING_PID, KEEP_POSITION_TOLERANCE.asPose2d());
+
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
+        setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap, hub));
 
         // copy position from roadrunner if motors are disabled
         if (HardwareCreator.SIMULATE_DRIVETRAIN || HardwareCreator.SIMULATE_HARDWARE) setLocalizer(new StateCopyLocalizer());
 
-        trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
+        trajectorySequenceRunner = new TrajectorySequenceRunner(follower, positionMaintainer, HEADING_PID);
 
         this.hub = hub;
         this.drivetrain = drivetrain;

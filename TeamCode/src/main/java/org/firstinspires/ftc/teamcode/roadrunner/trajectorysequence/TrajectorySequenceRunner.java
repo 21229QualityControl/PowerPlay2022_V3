@@ -5,13 +5,13 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.kinematics.Kinematics;
 import com.acmerobotics.roadrunner.profile.MotionState;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryMarker;
@@ -20,13 +20,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.teamcode.main.subsystems.Dashboard;
+import org.firstinspires.ftc.teamcode.roadrunner.PositionMaintainer;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.StateCopyLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.IterativeAsyncMarker;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.LinearAsyncMarker;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.LinearSyncSegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.SequenceSegment;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.StationarySegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.TrajectorySegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.TurnSegment;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.WaitForAsyncSegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.WaitSegment;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
@@ -35,7 +38,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-@Config
+//@Config
 public class TrajectorySequenceRunner {
     public static String COLOR_INACTIVE_TRAJECTORY = "#4caf5042";
     public static String COLOR_INACTIVE_TURN = "#7c4dff42";
@@ -50,6 +53,7 @@ public class TrajectorySequenceRunner {
     public static int POSE_HISTORY_LIMIT = 100;
 
     private final TrajectoryFollower follower;
+    private final PositionMaintainer positionMaintainer;
 
     private final PIDFController turnController;
 
@@ -70,8 +74,9 @@ public class TrajectorySequenceRunner {
     public Consumer<Canvas> dashboardConsumer = null;
     public Consumer<TelemetryPacket> packetConsumer = null;
 
-    public TrajectorySequenceRunner(TrajectoryFollower follower, PIDCoefficients headingPIDCoefficients) {
+    public TrajectorySequenceRunner(TrajectoryFollower follower, PositionMaintainer positionMaintainer, PIDCoefficients headingPIDCoefficients) {
         this.follower = follower;
+        this.positionMaintainer = positionMaintainer;
 
         turnController = new PIDFController(headingPIDCoefficients);
         turnController.setInputBounds(0, 2 * Math.PI);
@@ -80,7 +85,7 @@ public class TrajectorySequenceRunner {
         latencyClock = new ElapsedTime();
 
         Dashboard.setUp();
-        Dashboard.getInstance().setTelemetryTransmissionInterval(25);
+        Dashboard.setTelemetryTransmissionInterval(25);
     }
 
     public void followTrajectorySequenceAsync(TrajectorySequence trajectorySequence) {
@@ -140,13 +145,15 @@ public class TrajectorySequenceRunner {
                     currentSegmentIndex++;
 
                     driveSignal = new DriveSignal();
+
+                    positionMaintainer.resetController();
                 } else {
 //                    Log.d("Roadrunner", String.format("Pose:%s | Vel:%s", poseEstimate, poseVelocity));
                     driveSignal = follower.update(poseEstimate, poseVelocity);
                     lastPoseError = follower.getLastError();
                 }
-
                 targetPose = currentTrajectory.get(deltaTime);
+
             } else if (currentSegment instanceof TurnSegment) {
                 MotionState targetState = ((TurnSegment) currentSegment).getMotionProfile().get(deltaTime);
 
@@ -171,46 +178,60 @@ public class TrajectorySequenceRunner {
                 if (deltaTime >= currentSegment.getDuration()) {
                     currentSegmentIndex++;
                     driveSignal = new DriveSignal();
+
+                    positionMaintainer.resetController();
                 }
-            } else if (currentSegment instanceof WaitSegment) {
-                lastPoseError = new Pose2d();
 
-                targetPose = currentSegment.getStartPose();
-                driveSignal = new DriveSignal();
-                if (((WaitSegment) currentSegment).test()) {
-                    currentSegmentIndex++;
-                    Log.d("Roadrunner", "Wait segment condition met, time=" + deltaTime + ", timeout="+currentSegment.getDuration());
-                } else if (deltaTime >= currentSegment.getDuration()) {
-                    currentSegmentIndex++;
-                    Log.d("Roadrunner", "Wait segment expired after " + currentSegment.getDuration());
+            } else if (currentSegment instanceof StationarySegment) {
+                // keep position
+                if (((StationarySegment) currentSegment).isKeepingPosition()) {
+                    targetPose = currentSegment.getStartPose();
+
+                    if (isNewTransition) {
+                        positionMaintainer.maintainPosition(targetPose);
+                    }
+
+                    driveSignal = positionMaintainer.update(poseEstimate, poseVelocity);
+                    lastPoseError = positionMaintainer.getLastError();
+                } else {
+                    targetPose = currentSegment.getStartPose();
+                    lastPoseError = Kinematics.calculateRobotPoseError(targetPose, poseEstimate);
+
+                    driveSignal = new DriveSignal();
                 }
-            } else if (currentSegment instanceof LinearSyncSegment) {
-                lastPoseError = new Pose2d();
 
-                targetPose = currentSegment.getStartPose();
-                driveSignal = new DriveSignal();
+                // take care of different stationary segment types
+                if (currentSegment instanceof WaitSegment) {
+                    if (((WaitSegment) currentSegment).test()) {
+                        currentSegmentIndex++;
+                        Log.d("Roadrunner", "Wait segment condition met, time=" + deltaTime + ", timeout="+currentSegment.getDuration());
+                    } else if (deltaTime >= currentSegment.getDuration()) {
+                        currentSegmentIndex++;
+                        Log.d("Roadrunner", "Wait segment expired after " + currentSegment.getDuration());
+                    }
 
-                if (((LinearSyncSegment) currentSegment).isFinished()) {
-                    currentSegmentIndex++;
-                }
-            } else if (currentSegment instanceof LinearAsyncMarker) {
-                targetPose = currentSegment.getStartPose();
-                driveSignal = new DriveSignal();
-
-                if (((LinearAsyncMarker) currentSegment).isWaitSegment()) {
-                    lastPoseError = new Pose2d();
-
-                    if (((LinearAsyncMarker) currentSegment).isFinished()) {
+                } else if (currentSegment instanceof LinearSyncSegment) {
+                    if (((LinearSyncSegment) currentSegment).isFinished()) {
                         currentSegmentIndex++;
                     }
-                } else {
-                    ((LinearAsyncMarker) currentSegment).start();
 
+                } else if (currentSegment instanceof WaitForAsyncSegment) {
+                    if (((WaitForAsyncSegment) currentSegment).isAsyncFinished()) {
+                        currentSegmentIndex++;
+                    }
+
+                } else if (currentSegment instanceof LinearAsyncMarker) {
+                    ((LinearAsyncMarker) currentSegment).start();
+                    currentSegmentIndex++;
+
+                } else if (currentSegment instanceof IterativeAsyncMarker) {
+                    if (!((IterativeAsyncMarker) currentSegment).isRemove()) {
+                        ((IterativeAsyncMarker) currentSegment).start();
+                    } else {
+                        ((IterativeAsyncMarker) currentSegment).end();
+                    }
                     currentSegmentIndex++;
                 }
-            } else if (currentSegment instanceof IterativeAsyncMarker) {
-                ((IterativeAsyncMarker) currentSegment).process();
-                currentSegmentIndex++;
             }
 
             ActiveIterativeAsyncManager.runAll();

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.path.PathContinuityViolationException;
@@ -18,6 +20,7 @@ import com.acmerobotics.roadrunner.trajectory.TrajectoryMarker;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.acmerobotics.roadrunner.util.Angle;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.IterativeAsyncMarker;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.LinearAsyncMarker;
@@ -25,6 +28,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegm
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.SequenceSegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.TrajectorySegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.TurnSegment;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.WaitForAsyncSegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.WaitSegment;
 
 import java.util.ArrayList;
@@ -68,6 +72,10 @@ public class TrajectorySequenceBuilder {
     private double lastDurationTraj;
     private double lastDisplacementTraj;
 
+    private boolean maintainPosition;
+
+    private ElapsedTime lifeTime;
+
     public TrajectorySequenceBuilder(
             Pose2d startPose,
             Double startTangent,
@@ -108,6 +116,10 @@ public class TrajectorySequenceBuilder {
 
         lastDurationTraj = 0.0;
         lastDisplacementTraj = 0.0;
+
+        maintainPosition = false;
+
+        lifeTime = new ElapsedTime();
     }
 
     public TrajectorySequenceBuilder(
@@ -595,7 +607,7 @@ public class TrajectorySequenceBuilder {
 
     public TrajectorySequenceBuilder waitSeconds(double seconds) {
         pushPath();
-        sequenceSegments.add(new WaitSegment(lastPose, seconds, Collections.emptyList()));
+        sequenceSegments.add(new WaitSegment(lastPose, seconds, maintainPosition, Collections.emptyList()));
 
         currentDuration += seconds;
         return this;
@@ -603,7 +615,7 @@ public class TrajectorySequenceBuilder {
 
     public TrajectorySequenceBuilder waitForCondition(BooleanSupplier quitCase, double timeout) {
         pushPath();
-        sequenceSegments.add(new WaitSegment(lastPose, quitCase, timeout/1000, Collections.emptyList()));
+        sequenceSegments.add(new WaitSegment(lastPose, quitCase, timeout/1000, maintainPosition, Collections.emptyList()));
 
         return this;
     }
@@ -616,7 +628,7 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder addIterative(String name, Runnable updateFunction) {
-        IterativeAsyncMarker async = new IterativeAsyncMarker(name, updateFunction, lastPose, Collections.emptyList());
+        IterativeAsyncMarker async = new IterativeAsyncMarker(name, updateFunction, lastPose, maintainPosition, Collections.emptyList());
         if (currentTrajectoryBuilder != null) {
             currentTrajectoryBuilder.addDisplacementMarker(async::start);
         } else {
@@ -626,7 +638,7 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder removeIterative(String name) {
-        IterativeAsyncMarker async = new IterativeAsyncMarker(name, lastPose, Collections.emptyList());
+        IterativeAsyncMarker async = new IterativeAsyncMarker(name, lastPose, maintainPosition, Collections.emptyList());
         if (currentTrajectoryBuilder != null) {
             currentTrajectoryBuilder.addDisplacementMarker(async::end);
         } else {
@@ -636,7 +648,7 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder executeAsync(String name, Runnable function) {
-        LinearAsyncMarker async = new LinearAsyncMarker(name, function, lastPose, Collections.emptyList());
+        LinearAsyncMarker async = new LinearAsyncMarker(name, function, lastPose, maintainPosition, Collections.emptyList());
         if (currentTrajectoryBuilder != null) {
             currentTrajectoryBuilder.addDisplacementMarker(async::start);
         } else {
@@ -646,16 +658,21 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder waitForAsync(String name) {
-        LinearAsyncMarker marker = new LinearAsyncMarker(name, lastPose, Collections.emptyList());
+        WaitForAsyncSegment marker = new WaitForAsyncSegment(name, lastPose, maintainPosition, Collections.emptyList());
         if (currentTrajectoryBuilder != null) pushPath();
         sequenceSegments.add(marker);
         return this;
     }
 
     public TrajectorySequenceBuilder executeSync(Runnable function) {
-        LinearSyncSegment async = new LinearSyncSegment(function, lastPose, Collections.emptyList());
+        LinearSyncSegment async = new LinearSyncSegment(function, lastPose, maintainPosition, Collections.emptyList());
         if (currentTrajectoryBuilder != null) pushPath();
         sequenceSegments.add(async);
+        return this;
+    }
+
+    public TrajectorySequenceBuilder setKeepPosition(boolean keepPosition) {
+        this.maintainPosition = keepPosition;
         return this;
     }
 
@@ -688,7 +705,9 @@ public class TrajectorySequenceBuilder {
                 temporalMarkers, displacementMarkers, spatialMarkers
         );
 
-        return new TrajectorySequence(projectGlobalMarkersToLocalSegments(globalMarkers, sequenceSegments));
+        TrajectorySequence builtTrajectorySequence = new TrajectorySequence(projectGlobalMarkersToLocalSegments(globalMarkers, sequenceSegments));
+        Log.d("Roadrunner", "TrajectorySequenceBuilder took " + lifeTime.milliseconds() + " ms");
+        return builtTrajectorySequence;
     }
 
     private List<TrajectoryMarker> convertMarkersToGlobal(
@@ -773,7 +792,7 @@ public class TrajectorySequenceBuilder {
                 newMarkers.add(new TrajectoryMarker(segmentOffsetTime, marker.getCallback()));
 
                 WaitSegment thisSegment = (WaitSegment) segment;
-                newSegment = new WaitSegment(thisSegment.getStartPose(), thisSegment.getDuration(), newMarkers);
+                newSegment = new WaitSegment(thisSegment.getStartPose(), thisSegment.getDuration(), thisSegment.isKeepingPosition(), newMarkers);
             } else if (segment instanceof TurnSegment) {
                 List<TrajectoryMarker> newMarkers = new ArrayList<>(segment.getMarkers());
 

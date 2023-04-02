@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.main.subsystems;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
+import org.firstinspires.ftc.teamcode.util.data.FakeDashboardPacket;
 
 /**
  * Static class for the FTC Dashboard.
@@ -16,29 +17,50 @@ public class Dashboard {
    public static Canvas fieldOverlay = packet.fieldOverlay();
    private static FtcDashboard dashboard = null;
 
+   public static boolean DISABLE_DASHBOARD = true;
+
    public static void setUp() {
       dashboard = FtcDashboard.getInstance();
+      resetPacket();
    }
 
    public static void resetPacket() {
-      packet = new TelemetryPacket();
-      fieldOverlay = packet.fieldOverlay();
+      if (DISABLE_DASHBOARD) {
+         packet = new FakeDashboardPacket();
+         fieldOverlay = packet.fieldOverlay();
+      } else {
+         packet = new TelemetryPacket();
+         fieldOverlay = packet.fieldOverlay();
+      }
    }
 
    public static void sendPacket() {
-      if (dashboard == null) {
-         setUp();
-      }
+      if (DISABLE_DASHBOARD) return;
+      if (dashboard == null) throw new RuntimeException("Dashboard sendPacket() called before setUp()");
 
-      if (dashboard != null) {
-         dashboard.sendTelemetryPacket(packet);
-         resetPacket();
-      } else {
-         Log.e("Dashboard", "Dashboard failed to init - Dashboard is null");
-      }
+      dashboard.sendTelemetryPacket(packet);
+      resetPacket();
    }
 
-   public static FtcDashboard getInstance() {
+   public static FtcDashboard getInstance() { // not protected from disable
       return dashboard;
+   }
+
+   public static void startCameraStream(CameraStreamSource source, double maxFps) {
+      if (DISABLE_DASHBOARD) return;
+      if (dashboard == null) throw new RuntimeException("Dashboard startCameraStream() called before setUp()");
+      dashboard.startCameraStream(source, maxFps);
+   }
+
+   public static void stopCameraStream() {
+      if (DISABLE_DASHBOARD) return;
+      if (dashboard == null) throw new RuntimeException("Dashboard stopCameraStream() called before setUp()");
+      dashboard.stopCameraStream();
+   }
+
+   public static void setTelemetryTransmissionInterval(int newTransmissionInterval) {
+      if (DISABLE_DASHBOARD) return;
+      if (dashboard == null) throw new RuntimeException("Dashboard setTelemetryTransmissionInterval() called before setUp()");
+      dashboard.setTelemetryTransmissionInterval(newTransmissionInterval);
    }
 }

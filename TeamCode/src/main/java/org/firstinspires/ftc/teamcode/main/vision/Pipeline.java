@@ -31,13 +31,7 @@ public abstract class Pipeline extends OpenCvPipeline {
     public static int READ_IMAGE = -1; // indexed from 1
     public static boolean INDEX_IMAGES = false;
 
-    public static boolean WHITE_BALANCE_IMAGE = true;
-    public static boolean GAMMA_CORRECT_IMAGE = true;
-
     private List<String> indexedFiles = new ArrayList<>(); // contains file names
-
-    public Pipeline() {
-    }
 
     @Override
     public void init(Mat mat) {
@@ -45,11 +39,6 @@ public abstract class Pipeline extends OpenCvPipeline {
         indexImageFiles();
         READ_IMAGE = -indexedFiles.size();
     }
-
-    public abstract void setGammaValue(double gammaValue);
-    public abstract double getGammaValue();
-
-    public abstract int getReading();
 
     public boolean isInitialized() {
         return isInitialized;
@@ -97,10 +86,5 @@ public abstract class Pipeline extends OpenCvPipeline {
             indexedFiles.clear();
         }
         INDEX_IMAGES = false;
-    }
-
-    protected Mat notNull(Mat checkedMat, Mat defaultMat) {
-        if (checkedMat == null || checkedMat.empty()) return defaultMat;
-        return checkedMat;
     }
 }

@@ -14,7 +14,7 @@ public class MotorWithPID {
     private PIDCoefficients pid;
     private int targetPosition = 0;
     private int internalOffset = 0;
-    private int tolerance = 10;
+    private int tolerance = 5;
     private double maxPower = 1e-8; // zero does not work
 
     public MotorWithPID(DcMotorEx motor, PIDCoefficients pid) {
@@ -39,6 +39,7 @@ public class MotorWithPID {
      */
     public void update() {
         double newPower = this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity());
+//        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
         motor.setPower(newPower);
     }
 
@@ -64,7 +65,7 @@ public class MotorWithPID {
      */
     public void setTargetPosition(int position) {
         this.targetPosition = position;
-        this.pidfController.setTargetPosition(position + internalOffset);
+        this.pidfController.setTargetPosition(position - internalOffset); // TODO: Verify sign
     }
 
     /**
@@ -73,6 +74,15 @@ public class MotorWithPID {
      */
     public int getCurrentPosition() {
         return motor.getCurrentPosition() + internalOffset;
+    }
+
+    public void zeroMotorInternals() {
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void resetIntegralGain() {
+        this.pidfController.reset();
     }
 
     /**
@@ -122,6 +132,13 @@ public class MotorWithPID {
      */
     public double getPower() {
         return motor.getPower();
+    }
+
+    /**
+     * Sets the motor power to zero
+     */
+    public void stopMotor() {
+        motor.setPower(0);
     }
 
     /**

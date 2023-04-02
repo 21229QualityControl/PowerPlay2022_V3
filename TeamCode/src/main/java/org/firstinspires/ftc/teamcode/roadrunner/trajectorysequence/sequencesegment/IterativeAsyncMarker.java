@@ -11,29 +11,28 @@ import java.util.List;
  * Marker that starts and ends an iterative function.
  * Functions are managed by ActiveIterativeAsyncManager
  */
-public class IterativeAsyncMarker extends SequenceSegment {
+public class IterativeAsyncMarker extends StationarySegment {
 
     private String name;
     private Runnable function;
+    private boolean isRemove;
 
-    public IterativeAsyncMarker(String name, Runnable asyncFunction, Pose2d startPose, List<TrajectoryMarker> markers) {
-        super("ITERATIVE_ASYNC_START", 0, startPose, startPose, markers);
+    public IterativeAsyncMarker(String name, Runnable asyncFunction, Pose2d pose, boolean keepPosition, List<TrajectoryMarker> markers) {
+        super("ITERATIVE_ASYNC_START", 0, pose, keepPosition, markers);
         this.name = name;
         this.function = asyncFunction;
+        this.isRemove = false;
     }
 
-    public IterativeAsyncMarker(String name, Pose2d startPose, List<TrajectoryMarker> markers) {
-        super("ITERATIVE_ASYNC_END", 0, startPose, startPose, markers);
+    public IterativeAsyncMarker(String name, Pose2d pose, boolean keepPosition, List<TrajectoryMarker> markers) {
+        super("ITERATIVE_ASYNC_END", 0, pose, keepPosition, markers);
         this.name = name;
         this.function = null;
+        this.isRemove = true;
     }
 
-    public void process() {
-        if (function != null) {
-            start();
-        } else {
-            end();
-        }
+    public boolean isRemove() {
+        return isRemove;
     }
 
     public boolean start() {

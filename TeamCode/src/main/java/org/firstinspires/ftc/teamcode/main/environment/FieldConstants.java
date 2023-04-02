@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.main.environment;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 
@@ -21,7 +20,6 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
  *
  *                 Audience
  */
-@Config
 public class FieldConstants {
     // Field units
     private static final double field = 141.0; // = 6*tileTabless + 5*tab = 6*22.875 + 5*0.750 = 141.000
@@ -37,6 +35,12 @@ public class FieldConstants {
     // Substations
     public static final Vector2d blueSubstation = new Vector2d(0, wall);
     public static final Vector2d redSubstation = new Vector2d(0, -wall);
+
+    // Cone stacks
+    public static final Vector2d blueRightConeStack = new Vector2d(-wall+2, tabHalf+tileTabless/2);
+    public static final Vector2d blueLeftConeStack = new Vector2d(wall-2, tabHalf+tileTabless/2);
+    public static final Vector2d redLeftConeStack = new Vector2d(-wall+2, -tabHalf-tileTabless/2);
+    public static final Vector2d redRightConeStack = new Vector2d(wall-2, -tabHalf-tileTabless/2);
 
     // Starting Positions
     public static final Pose2d blueRightStartingPosition = new Pose2d(-tabHalf-tileTabless-tileTabbed/2, wall-RobotConstants.frontWall, Math.toRadians(90)); // blue terminal side

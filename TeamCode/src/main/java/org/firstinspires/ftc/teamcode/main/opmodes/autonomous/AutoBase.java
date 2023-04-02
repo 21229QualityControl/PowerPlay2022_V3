@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode.main.opmodes.autonomous;
 
+import static org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner.HEADING_PID;
+
 import android.util.Log;
 
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.path.EmptyPathSegmentException;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.main.subsystems.Dashboard;
@@ -11,10 +15,13 @@ import org.firstinspires.ftc.teamcode.main.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.main.subsystems.GamePadController;
 import org.firstinspires.ftc.teamcode.main.subsystems.Hub;
 import org.firstinspires.ftc.teamcode.main.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.main.subsystems.LED;
 import org.firstinspires.ftc.teamcode.main.subsystems.Memory;
 import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
 import org.firstinspires.ftc.teamcode.main.subsystems.Vision;
+import org.firstinspires.ftc.teamcode.roadrunner.PositionMaintainer;
+import org.firstinspires.ftc.teamcode.roadrunner.drive.StateCopyLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
 
@@ -23,13 +30,18 @@ public abstract class AutoBase extends LinearOpMode {
     protected Drivetrain drivetrain;
     protected Roadrunner rr;
     protected Hub hub;
-    protected Vision vision;
     protected Intake intake;
     protected Outtake outtake;
+//    protected AutoCycleWithSensor auto;
+    protected Vision vision;
+    protected LED led;
 
     // controllers. WARNING: you are not supposed to touch the robot/controllers after init
     private GamePadController g1;
     private GamePadController g2;
+
+    // just for park
+    private PositionMaintainer parker;
 
     // config variables
     public static double START_DELAY = 0; // Seconds to wait before running
@@ -50,15 +62,21 @@ public abstract class AutoBase extends LinearOpMode {
         // setup
         Dashboard.setUp();
         Memory.IS_BLUE = isBlue();
+        Memory.AUTO_START_POSE = getStartPose();
         START_DELAY = 0;
 
         // instantiate subsystems
         this.hub = new Hub(hardwareMap);
         this.drivetrain = new Drivetrain(hardwareMap, hub);
         this.rr = new Roadrunner(hardwareMap,hub, drivetrain);
-        this.vision = new Vision(hardwareMap);
-        this.outtake = new Outtake(hardwareMap);
         this.intake = new Intake(hardwareMap);
+        this.outtake = new Outtake(hardwareMap);
+//        this.auto = new AutoCycleWithSensor(this.rr, this.intake, this.outtake);
+        Memory.REMEMBERED_OUTTAKE = this.outtake;
+        this.vision = new Vision(hardwareMap);
+        this.led = new LED(hardwareMap);
+
+        this.parker = new PositionMaintainer(new PIDCoefficients(3, 0, 0), new PIDCoefficients(3, 0, 0), HEADING_PID, new Pose2d(0.3, 0.3, Math.toRadians(1)));
 
         // setup gamepad controls
         g1 = new GamePadController(gamepad1);
@@ -75,7 +93,7 @@ public abstract class AutoBase extends LinearOpMode {
         onInit();
 
         /* ********** INIT LOOP ********** */
-        while (!isStarted() && !isStopRequested()) {
+        while (opModeInInit()) {
             // WARNING: you are not supposed to touch the robot/controllers after init
             // Control start delay
             if (g1.leftStickUpOnce() || g2.leftStickUpOnce()) {
@@ -85,6 +103,7 @@ public abstract class AutoBase extends LinearOpMode {
             }
 
             // use vision for signal
+            vision.updatePolling();
             if (!SIGNAL_OVERRIDE) SIGNAL = vision.getReading();
 
             // add telemetry info sheet
@@ -101,20 +120,23 @@ public abstract class AutoBase extends LinearOpMode {
             Dashboard.sendPacket();
             g1.update();
             g2.update();
+            outtake.update();
             idle();
         }
 
         /* ********** INIT END - AUTO START ********** */
 
-//        vision.stopStreaming(); // TODO: Disable cam stream
+        resetRuntime(); // reset runtime timer
+        Memory.saveStringToFile(String.valueOf(System.currentTimeMillis()), Memory.SAVED_TIME_FILE_NAME); // save auto time for persistence
+
+        vision.stopStreaming(); // Takes 0.135 seconds
 
         if (isStopRequested()) return; // exit if stopped
 
-        resetRuntime(); // reset runtime timer
-
         // use last detection or default signal if last cycle failed
         if (SIGNAL == -1) {
-            SIGNAL = vision.getLastValidReadingOrDefault(defaultSignal);
+            SIGNAL = vision.getLastValidReading();
+            if (SIGNAL == -1) SIGNAL = defaultSignal;
         }
 
         // set pose again just in case
@@ -139,16 +161,20 @@ public abstract class AutoBase extends LinearOpMode {
         double endTime = getRuntime();
         Log.d("Auto", "Auto ended at " + endTime);
 
+        // prepare park police
+        parker.resetController();
+        parker.maintainPosition(StateCopyLocalizer.pose);
+
         // run user end
         onEnd();
 
         /* ********** END LOOP ********** */
-        while (opModeIsActive() && !isStopRequested()) {
+        do {
             // telemetry end time
             telemetry.addData("End Time", endTime);
 
-            // keep robot still
-            rr.setMotorPowers(0, 0, 0, 0);
+            // keep robot on park
+            rr.setDriveSignal(parker.update(rr.getPoseEstimate(), rr.getPoseVelocity()));
 
             // record end pose
             rr.updatePoseEstimate();
@@ -157,20 +183,27 @@ public abstract class AutoBase extends LinearOpMode {
             // call user end loop
             onEndLoop();
 
+            outtake.update();
             telemetry.update();
-        }
+        } while (opModeIsActive() && !isStopRequested());
+
+        // Ensure motors are stopped
+        rr.setMotorPowers(0, 0, 0, 0);
+        outtake.getTurret().stopMotor();
+        outtake.getSlide().stopMotor();
     }
 
     private void printStartupStatus() {
-//        String camStatus;
-//        if (!barcodeCam.activePipeline.isInitialized()) camStatus = "INITIALIZING";
-//        else if (BARCODE == -1 && lastValidBarcode != -1) camStatus = "LOST [ " + lastValidBarcode + "]";
-//        else if (BARCODE == -1) camStatus = "FAILED TO READ";
-//        else if (BARCODE < 1 || 3 < BARCODE) camStatus = "UNKNOWN ERROR ( " + BARCODE + " )"; // this shouldn't happen
-//        else {
-//            camStatus = "FOUND [ " + BARCODE + " ]"; // 1=Left, 2=Mid, 3=Right
-//        }
-//
+        String camStatus;
+        if (SIGNAL_OVERRIDE) camStatus = "OVERRIDE " + SIGNAL;
+        else if (!vision.pipeline.isInitialized()) camStatus = "INITIALIZING";
+        else if (vision.getReading() == -1 && vision.getLastValidReading() != -1) camStatus = "LOST [ " + vision.getLastValidReading() + " ] for " + vision.getFramesWithoutDetection() + " frames";
+        else if (vision.getLastValidReading() == -1) camStatus = "FAILED TO READ";
+        else camStatus = "FOUND [ " + vision.getReading() + " ]";
+
+//        String outtakeStatus;
+//        if (Math.max(outtake.getTurretPosition()) < )
+
 //        String sensorStatus;
 //        if (surroundSensors.frontDistance.isTimedout() || surroundSensors.leftDistance.isTimedout() || surroundSensors.rightDistance.isTimedout()) {
 //            sensorStatus = "DISTANCE TIMEOUT";
@@ -179,9 +212,12 @@ public abstract class AutoBase extends LinearOpMode {
 //        } else {
 //            sensorStatus = "READY";
 //        }
-//
-//        telemetry.addData("Camera", "camStatus not implemented");
-//        telemetry.addData("    Gamma Value", CAMERA_GAMMA_VALUE);
+
+        telemetry.addData("Vision", camStatus);
+        telemetry.addData("    Debug", vision.getDebugData());
+//        telemetry.addData("Outtake motors", )
+        telemetry.addData("Turret Angle", outtake.getTurretAngle() + " -> " + outtake.getTurretTarget());
+        telemetry.addData("Extender Pos", outtake.getSlidePosition() + " -> " + outtake.getSlideTarget());
 //        telemetry.addData("Sensors", sensorStatus);
 //        telemetry.addData("    Occupancy", freightSystem.getDetectionDistance());
 //        telemetry.addData("    FrontDist", (surroundSensors.frontDistance.isTimedout() ? "TIMEOUT - " : "") + String.format("%.2f", surroundSensors.getFrontDist()));
@@ -225,25 +261,43 @@ public abstract class AutoBase extends LinearOpMode {
 //        }
     }
 
-    private void handleVisionSettings() {
-//        // vision settings
-//        if (g1.aOnce()) AprilTagDetectionPipeline.WHITE_BALANCE_IMAGE = !AprilTagDetectionPipeline.WHITE_BALANCE_IMAGE;
-//        if (g1.rightStickUpOnce()) CAMERA_GAMMA_VALUE /= 1.1; // brighten
-//        if (g1.rightStickDownOnce()) CAMERA_GAMMA_VALUE *= 1.1; // darken
-//        vision.aprilTagDetectionPipeline.setGammaValue(CAMERA_GAMMA_VALUE);
-    }
-
     protected void initSystem() {
-        // TODO: implement auto init system, which runs before every autonomous
+        // display init led
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+
+        // init intake first
+        intake.initialize();
+
+        // push slide into their limits
+        outtake.getSlide().getMainMotor().setPower(-0.3);
+        outtake.getSlide().getSecondMotor().setPower(-0.3);
+        sleep(1000);
+
+        // stop motors
+        outtake.getSlide().getMainMotor().setPower(0);
+        outtake.getSlide().getSecondMotor().setPower(0);
+        sleep(100);
+
+        // reset the encoders
+        outtake.getTurret().setInternalAngle(0);
+        outtake.getSlide().zeroMotorInternals();
+
+        // init outtake
+        outtake.initialize();
+
+        // disable led
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
     }
 
     /**
      * Iterative method for each follower update call (not for updatePoseEstimate())
      */
     protected void update() {
-        outtake.update();
-        intake.update();
         Dashboard.packet.put("Runtime", getRuntime());
+        telemetry.addData("Time left", 30 - getRuntime());
+        telemetry.addData("Runtime", getRuntime());
+        telemetry.update();
+        outtake.update();
     }
 
     // Settings that initialization needs
@@ -251,25 +305,11 @@ public abstract class AutoBase extends LinearOpMode {
     protected abstract Pose2d getStartPose();
     protected abstract void printDescription();
 
-    // Steps for auto
-    protected abstract void moveToJunction();
-    protected abstract void park();
-    protected void cycle() {
-        // TODO: Cycling code
-    }
-
     // Run methods to override
     protected void onInit() {}
     protected void onInitLoop() {}
     protected void onStart() {}
-    protected void onRun() {
-        outtake.initialize();
-        intake.initialize();
-
-        moveToJunction();
-        cycle();
-        park();
-    };
+    protected abstract void onRun();
     protected void onEnd() {}
     protected void onEndLoop() {}
 
