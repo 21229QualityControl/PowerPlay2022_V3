@@ -39,11 +39,6 @@ public class ManualDrive extends LinearOpMode {
     public static double SPEED_CONSTANT = 0.8;
     public static double TURN_CONSTANT = 0.9;
 
-    public static boolean START_ON_INPUT = true;
-    public static boolean DO_SENSOR_CHECK = true;
-    public static boolean DO_AUTO_UP = true;
-
-
     private Drivetrain drivetrain;
     private Roadrunner roadrunner;
     private Hub hub;
@@ -79,7 +74,7 @@ public class ManualDrive extends LinearOpMode {
         drivetrain.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Wait for start
-        while (!isStarted() && !isStopRequested()) {
+        while (opModeInInit()) {
             g1.update();
             g2.update();
             if (g1.x() || g2.x()) Memory.IS_BLUE = true;
@@ -92,27 +87,18 @@ public class ManualDrive extends LinearOpMode {
             telemetry.update();
         }
 
-        // Init
-        outtake.initialize();
-        intake.initialize();
+        // exit immediately if stopped
+        if (isStopRequested()) return;
 
-        // Transition, starts when g1 does an input. WARNING: May cause more user error than starting at the timer
-        g1.update();
-        while (START_ON_INPUT && g1.atRest() && opModeIsActive()) {
-            g1.update();
-            telemetry.addLine("Waiting for gamepad 1 input");
-            telemetry.addData("Color", Memory.IS_BLUE ? "🔵 BLUE" : "🔴 RED");
-            telemetry.update();
-        };
-
-        // On start (or when g1 did something)
+        // On start
         if (opModeIsActive()) {
             resetRuntime();
             g1.reset();
             g2.reset();
-        }
 
-        if (isStopRequested()) return; // exit if stopped
+            outtake.initialize();
+            intake.initialize();
+        }
 
         // While running
         while (opModeIsActive()) {
