@@ -153,12 +153,16 @@ public class ManualDrive extends LinearOpMode {
     }
 
     private void intakeControls() {
-        if (g1.start() && !slideExtend) { // Start to extend slide
-            intake.extendOut();
+        if (g1.startOnce()) { // Toggle extension setting
+            if (slideExtend) { // turn it off
+                intake.extendIn();
+                slideExtend = false;
+            } else { // turn it on
+                intake.extendOut();
+                slideExtend = true;
+            }
         }
-        if (g1.start() && slideExtend) { // Start to bring in slide
-            intake.extendIn();
-        }
+
         if (g1.xOnce()) {
             if (armOut) { // X to bring in arm and claw
                 intake.extendIn();
@@ -182,7 +186,7 @@ public class ManualDrive extends LinearOpMode {
             intake.extendTransfer();
             outtake.turretCenter();
             outtake.armTransfer();
-            intake.slideUp();
+            intake.slideDown();
 
             new Thread(() -> { // TODO: Better wait solution
                 sleep(500);
@@ -269,7 +273,7 @@ public class ManualDrive extends LinearOpMode {
             turretPos = TURRET_POS.LEFT;
         }
         if (g2.xOnce()) { // X to center turret
-            turretPos = TURRET_POS.RIGHT;
+            turretPos = TURRET_POS.CENTER;
         }
     }
 

@@ -133,7 +133,14 @@ public class Outtake {
         latchOpen();
     }
     private void raisePrep() {
-        latchClosed();
+        new Thread(() -> { // TODO: Refactor this into planner
+            try {
+                Thread.sleep(20);
+                latchClosed();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
         armOut();
         guideOut();
     }
