@@ -17,27 +17,43 @@ public class Intake {
     private Servo slide;
 
     public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.013, 0, 0.0001);
-    public static int EXTENDER_IN = 0;
-    public static int EXTENDER_OUT = 200;
-    public static int EXTENDER_TRANSFER = 75;
+    private static int EXTENDER_MIN = 0;
+    private static int EXTENDER_MAX = 1050; // 1080 is technically the max
+    public static int EXTENDER_STORED_POS = 0;
+    public static int EXTENDER_CYCLE_POS = 200; // TODO: Tune
+    public static int EXTENDER_TRANSFER_POS = 0; // TODO: Tune
 
-    public static double ARM_TRANSFER = 0.3;
-    public static double ARM_OUT = 0.42;
-    public static double ARM_STORE = 0.3;
-    public static double ARM_MAX = 0.61;
+    private static double ARM_MIN = 0;
+    private static double ARM_MAX = 0.87;
+    public static double ARM_STORED_POS = 0.29; // Arm is placed vertical
+    public static double ARM_INTAKING_POS = 0.6; // Claw leveled
+    public static double ARM_TRANSFER_POS = 0.23;
+    public static double ARM_ANGLED_DEPOSIT_POS = 0.5; // Claw tilted for front deposit
 
-    public static double CLAW_OPEN = 0;
-    public static double CLAW_CLOSED = 0.2;
+    private static double CLAW_MIN = 0;
+    private static double CLAW_MAX = 0.2;
+    public static double CLAW_GRAB_POS = 0.18;
+    public static double CLAW_DROP_POS = 0.1;
+    public static double CLAW_WIDE_POS = 0; // TODO: not wide enough
 
-    public static double SLIDE_UP = 0.5;
-    public static double SLIDE_DOWN = 0.31;
+    private static double VSLIDE_MIN = 0.30;
+    private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
+    public static double VSLIDE_LVL1_POS = 0.3;
+    public static double VSLIDE_LVL2_POS = 0.36;
+    public static double VSLIDE_LVL3_POS = 0.42;
+    public static double VSLIDE_LVL4_POS = 0.47;
+    public static double VSLIDE_LVL5_POS = 0.53;
+    public static double VSLIDE_CLEAR_LVL1_POS = 0.49; // Lift cone above a 1 stack
+    public static double VSLIDE_CLEAR_LVL2_POS = 0.53; // Lift cone above a 2 stack
+    public static double VSLIDE_CLEAR_LVL3_POS = 0.61; // Lift cone above a 3 stack
+    public static double VSLIDE_CLEAR_LVL4_POS = 0.61; // Lift cone above a 4 stack
 
     public Intake(HardwareMap hardwareMap) {
-        this.extender = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "extender"), EXTENDER_PID);
+        this.extender = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "intakeExtender"), EXTENDER_PID);
         this.extender.getMotor().setDirection(DcMotorSimple.Direction.REVERSE);
-        this.arm = HardwareCreator.createServo(hardwareMap, "arm", HardwareCreator.ServoType.AXON);
-        this.claw = HardwareCreator.createServo(hardwareMap, "claw", HardwareCreator.ServoType.AXON);
-        this.slide = HardwareCreator.createServo(hardwareMap, "intakeSlide", HardwareCreator.ServoType.AXON);
+        this.arm = HardwareCreator.createServo(hardwareMap, "intakeArm", HardwareCreator.ServoType.AXON);
+        this.claw = HardwareCreator.createServo(hardwareMap, "intakeClaw", HardwareCreator.ServoType.AXON);
+        this.slide = HardwareCreator.createServo(hardwareMap, "intakeVSlide", HardwareCreator.ServoType.AXON);
     }
 
     public void initialize() {
@@ -53,39 +69,39 @@ public class Intake {
 
     // Extender
     public void extendIn() {
-        this.extender.setTargetPosition(EXTENDER_IN);
+        this.extender.setTargetPosition(EXTENDER_STORED_POS);
     }
     public void extendOut() {
-        this.extender.setTargetPosition(EXTENDER_OUT);
+        this.extender.setTargetPosition(EXTENDER_CYCLE_POS);
     }
     public void extendTransfer() {
-        this.extender.setTargetPosition(EXTENDER_TRANSFER);
+        this.extender.setTargetPosition(EXTENDER_TRANSFER_POS);
     }
 
     // Arm
     public void armOut() {
-        this.arm.setPosition(ARM_OUT);
+        this.arm.setPosition(ARM_INTAKING_POS);
     }
     public void armStore() {
-        this.arm.setPosition(ARM_STORE);
+        this.arm.setPosition(ARM_STORED_POS);
     }
     public void armTransfer() {
-        this.arm.setPosition(ARM_TRANSFER);
+        this.arm.setPosition(ARM_TRANSFER_POS);
     }
 
     // Claw
     public void clawOpen() {
-        this.claw.setPosition(CLAW_OPEN);
+        this.claw.setPosition(CLAW_WIDE_POS);
     }
     public void clawClosed() {
-        this.claw.setPosition(CLAW_CLOSED);
+        this.claw.setPosition(CLAW_GRAB_POS);
     }
 
     // Slide
     public void slideUp() {
-        this.slide.setPosition(SLIDE_UP);
+        this.slide.setPosition(VSLIDE_MAX);
     }
     public void slideDown() {
-        this.slide.setPosition(SLIDE_DOWN);
+        this.slide.setPosition(VSLIDE_MIN);
     }
 }

@@ -18,9 +18,11 @@ public class Outtake {
     private Servo guide;
 
     public static PIDCoefficients TURRET_PID = new PIDCoefficients(0.007, 0, 0.0003);
-    public static int TURRET_LEFT = 300;
-    public static int TURRET_RIGHT = -300;
+    private static int TURRET_MIN = 0;
+    private static int TURRET_MAX = 0;
     public static int TURRET_CENTER = 0; // Initialize with turret centered
+    public static int TURRET_LEFT = 300; // TODO: Tune
+    public static int TURRET_RIGHT = -300; // TODO: Tune
 
     public static PIDCoefficients SLIDE_PID = new PIDCoefficients(0.015, 0, 0.0004);
     public static int SLIDE_HIGH = 600; // 900 is highest position
@@ -29,20 +31,29 @@ public class Outtake {
     public static int SLIDE_STORED = 0;
     public static int SLIDE_OFFSET = 100;
 
-    public static double ARM_OUT = 0; // This is actually 0
-    public static double ARM_TRANSFER = 0.55;
+    private static double ARM_MIN = 0;
+    private static double ARM_MAX = 0.85;
+    public static double ARM_FLAT_OUT = 0.11;
+    public static double ARM_TILT_OUT = 0.17;
+    public static double ARM_VERTICAL = 0.38; // might be unnecessary
+    public static double ARM_TRANSFER = 0.80; // TODO: Tune
 
-    public static double LATCH_OPEN = 0.5;
-    public static double LATCH_CLOSED = 0.84;
+    public static double LATCH_OPEN = 0.37;
+    public static double LATCH_BARELY = 0.74; // Just covers the bottom, does not apply pressure
+    public static double LATCH_ENGAGED = 0.84; // may disable the servo temporarily
 
-    public static double GUIDE_OUT = 0.4;
-    public static double GUIDE_IN = 0.12;
-    public static double GUIDE_DOWN = 0.7;
+    private static double GUIDE_MIN = 0;
+    private static double GUIDE_MAX = 0;
+    public static double GUIDE_FLAT = 0.4;
+    public static double GUIDE_INIT = 0.75;
+    public static double GUIDE_RETRACT_DOWN = 0.75;
+    public static double GUIDE_STORE_UP = 0.05;
+
     public Outtake(HardwareMap hardwareMap) {
-        this.turret = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "turret"), TURRET_PID);
-        this.slide = new OppositeMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtake"), HardwareCreator.createMotor(hardwareMap, "outtakeOpposite"), SLIDE_PID);
-        this.latch = HardwareCreator.createServo(hardwareMap, "latch", HardwareCreator.ServoType.DEFAULT);
-        this.guide = HardwareCreator.createServo(hardwareMap, "guide", HardwareCreator.ServoType.GOBILDA);
+        this.turret = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeTurret"), TURRET_PID);
+        this.slide = new OppositeMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeSlide1"), HardwareCreator.createMotor(hardwareMap, "outtakeSlide2"), SLIDE_PID);
+        this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
+        this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
     }
 
@@ -58,7 +69,7 @@ public class Outtake {
 
     // Arm movements
     public void armOut() {
-        this.arm.setPosition(ARM_OUT);
+        this.arm.setPosition(ARM_TILT_OUT);
     }
     public void armTransfer() {
         this.arm.setPosition(ARM_TRANSFER);
@@ -69,7 +80,7 @@ public class Outtake {
         this.latch.setPosition(LATCH_OPEN);
     }
     public void latchClosed() {
-        this.latch.setPosition(LATCH_CLOSED);
+        this.latch.setPosition(LATCH_BARELY);
     }
 
     // Slide movements
@@ -102,14 +113,14 @@ public class Outtake {
 
     // Guide
     public void guideIn() {
-        guide.setPosition(GUIDE_IN);
+        guide.setPosition(GUIDE_STORE_UP);
     }
     public void guideOut() {
-        guide.setPosition(GUIDE_OUT);
+        guide.setPosition(GUIDE_FLAT);
     }
     // Only needed for initialization stuff
     public void guideDown() {
-        guide.setPosition(GUIDE_DOWN);
+        guide.setPosition(GUIDE_RETRACT_DOWN);
     }
 
     // Shortcuts
