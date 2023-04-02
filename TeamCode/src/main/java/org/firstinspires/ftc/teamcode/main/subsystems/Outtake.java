@@ -4,32 +4,29 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.util.hardware.AngleMotorWithPID;
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
-import org.firstinspires.ftc.teamcode.util.hardware.MotorWithPID;
-import org.firstinspires.ftc.teamcode.util.hardware.OppositeMotorWithPID;
+import org.firstinspires.ftc.teamcode.util.hardware.DualMotorWithPID;
 
 @Config
 public class Outtake {
-    private OppositeMotorWithPID slide;
-    private MotorWithPID turret;
-    private Servo latch;
-    private Servo arm;
-    private Servo guide;
-
+    private final double TURRET_TICKS_PER_REV = ((((1+(46.0/17.0))) * (1+(46.0/17.0))) * 28) * (68.0/10.0); // Goes through 435 RPM motor and then 68T/10T gear ratio
     public static PIDCoefficients TURRET_PID = new PIDCoefficients(0.007, 0, 0.0003);
-    private static int TURRET_MIN = 0;
-    private static int TURRET_MAX = 0;
+    private static double TURRET_MIN = -90; // TODO: Tune
+    private static double TURRET_MAX = 90; // TODO: Tune
     public static int TURRET_CENTER = 0; // Initialize with turret centered
-    public static int TURRET_LEFT = 300; // TODO: Tune
-    public static int TURRET_RIGHT = -300; // TODO: Tune
+    public static int TURRET_LEFT = 45; // TODO: Tune
+    public static int TURRET_RIGHT = -45; // TODO: Tune
 
     public static PIDCoefficients SLIDE_PID = new PIDCoefficients(0.015, 0, 0.0004);
-    public static int SLIDE_HIGH = 600; // 900 is highest position
+    private static int SLIDE_MIN = 0;
+    private static int SLIDE_MAX = 900;
+    public static int SLIDE_HIGH = 600;
     public static int SLIDE_MID = 270;
     public static int SLIDE_LOW = 100;
     public static int SLIDE_STORED = 0;
-    public static int SLIDE_OFFSET = 100;
 
     private static double ARM_MIN = 0;
     private static double ARM_MAX = 0.85;
@@ -38,20 +35,28 @@ public class Outtake {
     public static double ARM_VERTICAL = 0.38; // might be unnecessary
     public static double ARM_TRANSFER = 0.80; // TODO: Tune
 
+    private static double LATCH_MIN = 0.35; // TODO: Tune
+    private static double LATCH_MAX = 0.85; // TODO: Tune
     public static double LATCH_OPEN = 0.37;
     public static double LATCH_BARELY = 0.74; // Just covers the bottom, does not apply pressure
     public static double LATCH_ENGAGED = 0.84; // may disable the servo temporarily
 
     private static double GUIDE_MIN = 0;
     private static double GUIDE_MAX = 0;
-    public static double GUIDE_FLAT = 0.4;
-    public static double GUIDE_INIT = 0.75;
+    public static double GUIDE_FLAT_OUT = 0.4;
     public static double GUIDE_RETRACT_DOWN = 0.75;
     public static double GUIDE_STORE_UP = 0.05;
+    public static double GUIDE_INIT = 0.75;
+
+    private DualMotorWithPID slide;
+    private AngleMotorWithPID turret;
+    private Servo latch;
+    private Servo arm;
+    private Servo guide;
 
     public Outtake(HardwareMap hardwareMap) {
-        this.turret = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeTurret"), TURRET_PID);
-        this.slide = new OppositeMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeSlide1"), HardwareCreator.createMotor(hardwareMap, "outtakeSlide2"), SLIDE_PID);
+        this.turret = new AngleMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeTurret"), TURRET_TICKS_PER_REV, TURRET_PID);
+        this.slide = new DualMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeSlide1"), HardwareCreator.createMotor(hardwareMap, "outtakeSlide2"), true, SLIDE_PID);
         this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
@@ -61,6 +66,7 @@ public class Outtake {
 
     public void initialize() {
         store();
+        guide.setPosition(GUIDE_INIT);
         turretCenter();
     }
 
@@ -69,23 +75,55 @@ public class Outtake {
         slide.update();
     }
 
-    // Arm movements
-    public void armOut() {
+    // Outtake Arm
+    public void setArmPosition(double pos) {
+        this.arm.setPosition(Range.clip(pos, ARM_MIN, ARM_MAX));
+    }
+    public void armFlatOut() {
+        this.arm.setPosition(ARM_FLAT_OUT);
+    }
+    public void armTiltOut() {
         this.arm.setPosition(ARM_TILT_OUT);
+    }
+    public void armVertical() {
+        this.arm.setPosition(ARM_VERTICAL);
     }
     public void armTransfer() {
         this.arm.setPosition(ARM_TRANSFER);
     }
 
     // Latch movements
+    public void setLatchPosition(double pos) {
+        this.latch.setPosition(Range.clip(pos, LATCH_MIN, LATCH_MAX));
+    }
     public void latchOpen() {
         this.latch.setPosition(LATCH_OPEN);
     }
-    public void latchClosed() {
+    public void latchBarely() {
         this.latch.setPosition(LATCH_BARELY);
+    }
+    public void latchEngaged() {
+        this.latch.setPosition(LATCH_ENGAGED);
+    }
+
+    // Guide
+    public void setGuidePosition(double pos) {
+        this.guide.setPosition(Range.clip(pos, GUIDE_MIN, GUIDE_MAX));
+    }
+    public void guideFlatOut() {
+        guide.setPosition(GUIDE_FLAT_OUT);
+    }
+    public void guideStoreUp() {
+        guide.setPosition(GUIDE_STORE_UP);
+    }
+    public void guideRetractDown() {
+        guide.setPosition(GUIDE_RETRACT_DOWN);
     }
 
     // Slide movements
+    public void setSlidePosition(int ticks) {
+        this.slide.setTargetPosition(Range.clip(ticks, SLIDE_MIN, SLIDE_MAX));
+    }
     public void slideStore() {
         slide.setTargetPosition(SLIDE_STORED);
     }
@@ -98,51 +136,69 @@ public class Outtake {
     public void slideHigh() {
         slide.setTargetPosition(SLIDE_HIGH);
     }
-    public void offsetSlide() {
-        slide.setTargetPosition(slide.getTargetPosition() - SLIDE_OFFSET);
+    public int getSlideTarget() {
+        return this.slide.getTargetPosition();
+    }
+    public int getSlidePosition() {
+        return this.slide.getCurrentPosition();
+    }
+    public double getSlidePower() {
+        return this.slide.getPower();
+    }
+    public void setSlideMaxPower(double maxPower) {
+        this.slide.setMaxPower(maxPower);
+    }
+    public DualMotorWithPID getSlide() {
+        return slide;
     }
 
     // Turret movements
+    public void setTurretAngle(double angle) {
+        turret.setAngle(Range.clip(angle, TURRET_MIN, TURRET_MAX));
+    }
     public void turretLeft() {
-        turret.setTargetPosition(TURRET_LEFT);
+        turret.setAngle(TURRET_LEFT);
     }
     public void turretCenter() {
-        turret.setTargetPosition(TURRET_CENTER);
+        turret.setAngle(TURRET_CENTER);
     }
     public void turretRight() {
-        turret.setTargetPosition(TURRET_RIGHT);
+        turret.setAngle(TURRET_RIGHT);
     }
-
-    // Guide
-    public void guideIn() {
-        guide.setPosition(GUIDE_STORE_UP);
+    public double getTurretTarget() {
+        return this.turret.getTargetAngle();
     }
-    public void guideOut() {
-        guide.setPosition(GUIDE_FLAT);
+    public double getTurretAngle() {
+        return this.turret.getAngle();
     }
-    // Only needed for initialization stuff
-    public void guideDown() {
-        guide.setPosition(GUIDE_RETRACT_DOWN);
+    public double getTurretPower() {
+        return this.turret.getPower();
+    }
+    public void setTurretMaxPower(double maxPower) {
+        this.turret.setMaxPower(maxPower);
+    }
+    public AngleMotorWithPID getTurret() {
+        return turret;
     }
 
     // Shortcuts
     public void store() {
         armTransfer();
         slideStore();
-        guideIn();
+        guideStoreUp();
         latchOpen();
     }
     private void raisePrep() {
         new Thread(() -> { // TODO: Refactor this into planner
             try {
                 Thread.sleep(20);
-                latchClosed();
+                latchBarely();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }).start();
-        armOut();
-        guideOut();
+        armTiltOut();
+        guideFlatOut();
     }
     public void raiseLow() {
         raisePrep();

@@ -5,6 +5,7 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
 import org.firstinspires.ftc.teamcode.util.hardware.MotorWithPID;
@@ -14,7 +15,7 @@ public class Intake {
     private MotorWithPID extender;
     private Servo arm;
     private Servo claw;
-    private Servo slide;
+    private Servo vslide;
 
     public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.013, 0, 0.0001);
     private static int EXTENDER_MIN = 0;
@@ -32,8 +33,9 @@ public class Intake {
 
     private static double CLAW_MIN = 0;
     private static double CLAW_MAX = 0.2;
+    public static double CLAW_CLOSED_POS = 0.17; // closed completely
     public static double CLAW_GRAB_POS = 0.18;
-    public static double CLAW_DROP_POS = 0.1;
+    public static double CLAW_RELEASE_POS = 0.1;
     public static double CLAW_WIDE_POS = 0; // TODO: not wide enough
 
     private static double VSLIDE_MIN = 0.30;
@@ -43,6 +45,7 @@ public class Intake {
     public static double VSLIDE_LVL3_POS = 0.42;
     public static double VSLIDE_LVL4_POS = 0.47;
     public static double VSLIDE_LVL5_POS = 0.53;
+    public static double VSLIDE_CLEAR_LVL0_POS = 0.3; // Lift cone off the ground
     public static double VSLIDE_CLEAR_LVL1_POS = 0.49; // Lift cone above a 1 stack
     public static double VSLIDE_CLEAR_LVL2_POS = 0.53; // Lift cone above a 2 stack
     public static double VSLIDE_CLEAR_LVL3_POS = 0.61; // Lift cone above a 3 stack
@@ -53,16 +56,16 @@ public class Intake {
         this.extender.getMotor().setDirection(DcMotorSimple.Direction.REVERSE);
         this.arm = HardwareCreator.createServo(hardwareMap, "intakeArm", HardwareCreator.ServoType.AXON);
         this.claw = HardwareCreator.createServo(hardwareMap, "intakeClaw", HardwareCreator.ServoType.AXON);
-        this.slide = HardwareCreator.createServo(hardwareMap, "intakeVSlide", HardwareCreator.ServoType.AXON);
+        this.vslide = HardwareCreator.createServo(hardwareMap, "intakeVSlide", HardwareCreator.ServoType.AXON);
 
         this.extender.setMaxPower(0.6);
     }
 
     public void initialize() {
-        extendIn();
+        extendStore();
         armStore();
         clawClosed();
-        slideDown();
+        vslideDown();
     }
 
     public void update() {
@@ -70,18 +73,36 @@ public class Intake {
     }
 
     // Extender
-    public void extendIn() {
+    public void setExtenderPosition(int ticks) {
+        this.extender.setTargetPosition(Range.clip(ticks, EXTENDER_MIN, EXTENDER_MAX));
+    }
+    public void extendStore() {
         this.extender.setTargetPosition(EXTENDER_STORED_POS);
     }
-    public void extendOut() {
+    public void extendCycle() {
         this.extender.setTargetPosition(EXTENDER_CYCLE_POS);
     }
     public void extendTransfer() {
         this.extender.setTargetPosition(EXTENDER_TRANSFER_POS);
     }
+    public int getExtenderTarget() {
+        return this.extender.getTargetPosition();
+    }
+    public int getExtenderPosition() {
+        return this.extender.getCurrentPosition();
+    }
+    public double getExtenderPower() {
+        return this.extender.getPower();
+    }
+    public void setExtenderMaxPower(double maxPower) {
+        this.extender.setMaxPower(maxPower);
+    }
 
-    // Arm
-    public void armOut() {
+    // Intake Arm
+    public void setArmPosition(double pos) {
+        this.arm.setPosition(Range.clip(pos, ARM_MIN, ARM_MAX));
+    }
+    public void armIntake() {
         this.arm.setPosition(ARM_INTAKING_POS);
     }
     public void armStore() {
@@ -90,20 +111,128 @@ public class Intake {
     public void armTransfer() {
         this.arm.setPosition(ARM_TRANSFER_POS);
     }
+    public void armAngledDeposit() {
+        this.arm.setPosition(ARM_ANGLED_DEPOSIT_POS);
+    }
+    public double getArmPosition() {
+        return this.arm.getPosition();
+    }
 
     // Claw
-    public void clawOpen() {
+    public void setClawPosition(double pos) {
+        this.claw.setPosition(Range.clip(pos, CLAW_MIN, CLAW_MAX));
+    }
+    public void clawWide() {
         this.claw.setPosition(CLAW_WIDE_POS);
     }
-    public void clawClosed() {
+    public void clawRelease() {
+        this.claw.setPosition(CLAW_RELEASE_POS);
+    }
+    public void clawGrab() {
         this.claw.setPosition(CLAW_GRAB_POS);
+    }
+    public void clawClosed() {
+        this.claw.setPosition(CLAW_CLOSED_POS);
+    }
+    public double getClawPosition() {
+        return this.claw.getPosition();
     }
 
     // Slide
-    public void slideUp() {
-        this.slide.setPosition(VSLIDE_MAX);
+    public void setVSlidePosition(double pos) {
+        this.vslide.setPosition(Range.clip(pos, VSLIDE_MIN, VSLIDE_MAX));
     }
-    public void slideDown() {
-        this.slide.setPosition(VSLIDE_MIN);
+    public void vslideDown() {
+        this.vslide.setPosition(VSLIDE_MIN);
+    }
+    public void vslideLevel(int level) {
+        switch (level) {
+            case 1:
+                this.vslide.setPosition(VSLIDE_LVL1_POS);
+                break;
+            case 2:
+                this.vslide.setPosition(VSLIDE_LVL2_POS);
+                break;
+            case 3:
+                this.vslide.setPosition(VSLIDE_LVL3_POS);
+                break;
+            case 4:
+                this.vslide.setPosition(VSLIDE_LVL4_POS);
+                break;
+            case 5:
+                this.vslide.setPosition(VSLIDE_LVL5_POS);
+                break;
+            default:
+                throw new RuntimeException("Unsupported vslide level: " + level);
+        }
+    }
+    public void vslideLiftLevel(int level) {
+        switch (level) {
+            case 1:
+                this.vslide.setPosition(VSLIDE_CLEAR_LVL0_POS);
+                break;
+            case 2:
+                this.vslide.setPosition(VSLIDE_CLEAR_LVL1_POS);
+                break;
+            case 3:
+                this.vslide.setPosition(VSLIDE_CLEAR_LVL2_POS);
+                break;
+            case 4:
+                this.vslide.setPosition(VSLIDE_CLEAR_LVL3_POS);
+                break;
+            case 5:
+                this.vslide.setPosition(VSLIDE_CLEAR_LVL4_POS);
+                break;
+            default:
+                throw new RuntimeException("Unsupported vslide lift level: " + level);
+        }
+    }
+    public double getVSlidePosition() {
+        return this.vslide.getPosition();
+    }
+
+
+
+    // Some state checks
+    /**
+     * @return is the arm down in an intaking position
+     */
+    public boolean isArmFlat() {
+        return arm.getPosition() > ARM_INTAKING_POS - 0.05;
+    }
+
+    /**
+     * @return is the arm outside the robot, i.e past vertical
+     */
+    public boolean isArmOut() {
+        return arm.getPosition() > ARM_STORED_POS + 0.01;
+    }
+
+    /**
+     * @return is the arm blocking the outtake, i.e over it
+     */
+    public boolean isArmBlockingOuttake() {
+        return arm.getPosition() < ARM_STORED_POS - 0.01;
+    }
+
+    /**
+     * @return is the claw open wide for grabbing
+     */
+    public boolean isClawOpen() {
+        return claw.getPosition() < CLAW_WIDE_POS + 0.01;
+    }
+
+    /**
+     * @return is the claw closed for grabbing
+     */
+    public boolean isClawClosed() {
+        return claw.getPosition() > CLAW_GRAB_POS - 0.01;
+    }
+
+    /**
+     * @return is the vslide up in any unstacking position
+     */
+    public boolean isVSlideUp() {
+        return vslide.getPosition() > VSLIDE_MIN + 0.01;
     }
 }
