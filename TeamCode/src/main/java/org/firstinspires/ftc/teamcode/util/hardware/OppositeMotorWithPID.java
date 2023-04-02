@@ -16,7 +16,7 @@ public class OppositeMotorWithPID {
     private int targetPosition = 0;
     private int internalOffset = 0;
     private int tolerance = 10;
-    private double maxPower = 0;
+    private double maxPower = 1e-8; // zero does not work
 
     public OppositeMotorWithPID(DcMotorEx motor, DcMotorEx oppositeMotor, PIDCoefficients pid) {
         this(motor, oppositeMotor, pid, (x, v) -> 0.0);
@@ -27,7 +27,7 @@ public class OppositeMotorWithPID {
         this.oppositeMotor = oppositeMotor;
         this.pid = pid;
         this.pidfController = new PIDFController(pid, 0, 0, 0, f);
-        this.pidfController.setOutputBounds(-1, 1);
+        this.pidfController.setOutputBounds(-maxPower, maxPower);
 
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         oppositeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

@@ -15,7 +15,7 @@ public class MotorWithPID {
     private int targetPosition = 0;
     private int internalOffset = 0;
     private int tolerance = 10;
-    private double maxPower = 0;
+    private double maxPower = 1e-8; // zero does not work
 
     public MotorWithPID(DcMotorEx motor, PIDCoefficients pid) {
         this(motor, pid, (x, v) -> 0.0);
@@ -25,7 +25,7 @@ public class MotorWithPID {
         this.motor = motor;
         this.pid = pid;
         this.pidfController = new PIDFController(pid, 0, 0, 0, f);
-        this.pidfController.setOutputBounds(-1, 1);
+        this.pidfController.setOutputBounds(-maxPower, maxPower);
 
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }

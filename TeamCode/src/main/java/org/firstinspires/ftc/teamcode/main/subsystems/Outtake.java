@@ -55,6 +55,8 @@ public class Outtake {
         this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
+
+        this.slide.setMaxPower(0.6);
     }
 
     public void initialize() {

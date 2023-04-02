@@ -54,6 +54,8 @@ public class Intake {
         this.arm = HardwareCreator.createServo(hardwareMap, "intakeArm", HardwareCreator.ServoType.AXON);
         this.claw = HardwareCreator.createServo(hardwareMap, "intakeClaw", HardwareCreator.ServoType.AXON);
         this.slide = HardwareCreator.createServo(hardwareMap, "intakeVSlide", HardwareCreator.ServoType.AXON);
+
+        this.extender.setMaxPower(0.6);
     }
 
     public void initialize() {
