@@ -1,19 +1,28 @@
 package org.firstinspires.ftc.teamcode.main.opmodes.teleop;
 
+import static org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner.KEEP_POSITION_HEADING_PID;
+import static org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner.KEEP_POSITION_TOLERANCE;
+import static org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner.KEEP_POSITION_TRANSLATIONAL_PID;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.Cycler;
 import org.firstinspires.ftc.teamcode.main.subsystems.Dashboard;
 import org.firstinspires.ftc.teamcode.main.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.main.subsystems.GamePadController;
 import org.firstinspires.ftc.teamcode.main.subsystems.Hub;
 import org.firstinspires.ftc.teamcode.main.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.main.subsystems.LED;
 import org.firstinspires.ftc.teamcode.main.subsystems.Memory;
 import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
+import org.firstinspires.ftc.teamcode.main.subsystems.SmartGameTimer;
+import org.firstinspires.ftc.teamcode.roadrunner.PositionMaintainer;
 
 import java.util.List;
 
@@ -41,9 +50,15 @@ public class ManualDrive extends LinearOpMode {
 
     private Drivetrain drivetrain;
     private Roadrunner roadrunner;
-    private Hub hub;
     private Intake intake;
     private Outtake outtake;
+    private Hub hub;
+    private Cycler auto;
+    private LED led;
+
+    private PositionMaintainer positionMaintainer;
+    private ElapsedTime autoTransferTimer;
+    private SmartGameTimer smartGameTimer;
 
     private GamePadController g1, g2;
 
@@ -68,10 +83,26 @@ public class ManualDrive extends LinearOpMode {
         drivetrain = new Drivetrain(hardwareMap, hub);
         roadrunner = new Roadrunner(hardwareMap, hub, drivetrain);
         roadrunner.setPoseEstimate(Memory.LAST_POSE);
-        outtake = new Outtake(hardwareMap);
         intake = new Intake(hardwareMap);
+        if (Memory.REMEMBERED_OUTTAKE != null) {
+            outtake = new Outtake(hardwareMap, Memory.REMEMBERED_OUTTAKE);
+            smartGameTimer = new SmartGameTimer(true);
+        } else { // WE DON'T HAVE MEMORY OF AUTO!!! we need to align the outtake motors
+            outtake = new Outtake(hardwareMap);
+            outtake.getSlide().getMainMotor().setPower(-0.3);
+            outtake.getSlide().getSecondMotor().setPower(-0.3);
+
+            smartGameTimer = new SmartGameTimer(false);
+        }
+
+        positionMaintainer = new PositionMaintainer(KEEP_POSITION_TRANSLATIONAL_PID, KEEP_POSITION_TRANSLATIONAL_PID, KEEP_POSITION_HEADING_PID, KEEP_POSITION_TOLERANCE.asPose2d());
+        led = new LED(hardwareMap);
+        auto = new Cycler(roadrunner, intake, outtake);
 
         drivetrain.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intake.initialize();
+        outtake.initialize();
+        outtake.setTurretAngle(0);
 
         // Wait for start
         while (opModeInInit()) {
@@ -181,14 +212,21 @@ public class ManualDrive extends LinearOpMode {
         if (g1.yOnce()) { // Y to transfer
             intake.extendStore();
             intake.clawGrab();
-            intake.extendTransfer();
+            intake.extendStore();
             outtake.turretCenter();
             outtake.armTransfer();
-            intake.vslideDown();
+            intake.vslideTransfer();
 
             new Thread(() -> { // TODO: Better wait solution
                 sleep(500);
                 intake.armTransfer();
+                sleep(500);
+                intake.clawWide();
+                sleep(500);
+                intake.vslideDown();
+                intake.armStore();
+                intake.clawGrab();
+                armOut = false;
             }).start();
         }
         if (g1.aOnce()) { // A to grab

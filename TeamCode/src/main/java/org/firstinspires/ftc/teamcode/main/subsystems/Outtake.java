@@ -67,6 +67,19 @@ public class Outtake {
         this.slide.setMaxPower(0.6);
     }
 
+    public Outtake(HardwareMap hardwareMap, Outtake previousOuttake) {
+        this.turret = previousOuttake.turret;
+        this.slide = previousOuttake.slide;
+        this.slide.setDirection(DcMotorSimple.Direction.FORWARD); // reupdate the directions as the dcmotors forget
+        this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
+        this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
+        this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
+
+        this.turret.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.slide.getMainMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.slide.getSecondMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
     public void initialize() {
         store();
         guide.setPosition(GUIDE_INIT);
