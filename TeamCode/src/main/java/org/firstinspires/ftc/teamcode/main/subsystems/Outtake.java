@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.main.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -33,7 +35,8 @@ public class Outtake {
     public static double ARM_FLAT_OUT = 0.11;
     public static double ARM_TILT_OUT = 0.17;
     public static double ARM_VERTICAL = 0.38; // might be unnecessary
-    public static double ARM_TRANSFER = 0.80; // TODO: Tune
+    public static double ARM_TRANSFER = 0.76;
+    public static double ARM_TRANSFER_COMPLETE = 0.74; // TODO: Tune
 
     private static double LATCH_MIN = 0.35; // TODO: Tune
     private static double LATCH_MAX = 0.85; // TODO: Tune
@@ -90,6 +93,9 @@ public class Outtake {
     }
     public void armTransfer() {
         this.arm.setPosition(ARM_TRANSFER);
+    }
+    public void armTransferComplete() {
+        this.arm.setPosition(ARM_TRANSFER_COMPLETE);
     }
 
     // Latch movements
@@ -149,7 +155,7 @@ public class Outtake {
         this.slide.setMaxPower(maxPower);
     }
     public DualMotorWithPID getSlide() {
-        return slide;
+        return this.slide;
     }
 
     // Turret movements

@@ -21,14 +21,15 @@ public class Intake {
     private static int EXTENDER_MIN = 0;
     private static int EXTENDER_MAX = 1050; // 1080 is technically the max
     public static int EXTENDER_STORED_POS = 0;
-    public static int EXTENDER_CYCLE_POS = 200; // TODO: Tune
-    public static int EXTENDER_TRANSFER_POS = 0; // TODO: Tune
+    public static int EXTENDER_CYCLE_POS = 540;
+    public static int EXTENDER_BEFORE_STACK_POS = 400;
 
     private static double ARM_MIN = 0;
     private static double ARM_MAX = 0.87;
     public static double ARM_STORED_POS = 0.29; // Arm is placed vertical
     public static double ARM_INTAKING_POS = 0.6; // Claw leveled
-    public static double ARM_TRANSFER_POS = 0.23;
+    public static double ARM_TRANSFER_POS = 0.27;
+    public static double ARM_TRANSFER_COMPLETE_POS = 0.33;
     public static double ARM_ANGLED_DEPOSIT_POS = 0.5; // Claw tilted for front deposit
 
     private static double CLAW_MIN = 0;
@@ -40,12 +41,13 @@ public class Intake {
 
     private static double VSLIDE_MIN = 0.30;
     private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
+    public static double VSLIDE_TRANSFER = 0.43;
     public static double VSLIDE_LVL1_POS = 0.3;
     public static double VSLIDE_LVL2_POS = 0.36;
     public static double VSLIDE_LVL3_POS = 0.42;
     public static double VSLIDE_LVL4_POS = 0.47;
     public static double VSLIDE_LVL5_POS = 0.53;
-    public static double VSLIDE_CLEAR_LVL0_POS = 0.3; // Lift cone off the ground
+    public static double VSLIDE_CLEAR_LVL0_POS = 0.49; // Lift cone off the ground
     public static double VSLIDE_CLEAR_LVL1_POS = 0.49; // Lift cone above a 1 stack
     public static double VSLIDE_CLEAR_LVL2_POS = 0.53; // Lift cone above a 2 stack
     public static double VSLIDE_CLEAR_LVL3_POS = 0.61; // Lift cone above a 3 stack
@@ -58,7 +60,7 @@ public class Intake {
         this.claw = HardwareCreator.createServo(hardwareMap, "intakeClaw", HardwareCreator.ServoType.AXON);
         this.vslide = HardwareCreator.createServo(hardwareMap, "intakeVSlide", HardwareCreator.ServoType.AXON);
 
-        this.extender.setMaxPower(0.6);
+        this.extender.setMaxPower(0.8);
     }
 
     public void initialize() {
@@ -73,7 +75,7 @@ public class Intake {
     }
 
     // Extender
-    public void setExtenderPosition(int ticks) {
+    public void extenderTo(int ticks) {
         this.extender.setTargetPosition(Range.clip(ticks, EXTENDER_MIN, EXTENDER_MAX));
     }
     public void extendStore() {
@@ -81,9 +83,6 @@ public class Intake {
     }
     public void extendCycle() {
         this.extender.setTargetPosition(EXTENDER_CYCLE_POS);
-    }
-    public void extendTransfer() {
-        this.extender.setTargetPosition(EXTENDER_TRANSFER_POS);
     }
     public int getExtenderTarget() {
         return this.extender.getTargetPosition();
@@ -96,6 +95,9 @@ public class Intake {
     }
     public void setExtenderMaxPower(double maxPower) {
         this.extender.setMaxPower(maxPower);
+    }
+    public MotorWithPID getExtender() {
+        return this.extender;
     }
 
     // Intake Arm
@@ -110,6 +112,9 @@ public class Intake {
     }
     public void armTransfer() {
         this.arm.setPosition(ARM_TRANSFER_POS);
+    }
+    public void armTransferComplete() {
+        this.arm.setPosition(ARM_TRANSFER_COMPLETE_POS);
     }
     public void armAngledDeposit() {
         this.arm.setPosition(ARM_ANGLED_DEPOSIT_POS);
@@ -144,6 +149,9 @@ public class Intake {
     }
     public void vslideDown() {
         this.vslide.setPosition(VSLIDE_MIN);
+    }
+    public void vslideTransfer() {
+        this.vslide.setPosition(VSLIDE_TRANSFER);
     }
     public void vslideLevel(int level) {
         switch (level) {

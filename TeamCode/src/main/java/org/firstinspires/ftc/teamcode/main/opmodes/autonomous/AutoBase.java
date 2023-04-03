@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.PositionMaintainer;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.StateCopyLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
+import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
 
 public abstract class AutoBase extends LinearOpMode {
     // subsystems
@@ -32,7 +33,7 @@ public abstract class AutoBase extends LinearOpMode {
     protected Hub hub;
     protected Intake intake;
     protected Outtake outtake;
-//    protected AutoCycleWithSensor auto;
+    protected Cycler auto;
     protected Vision vision;
     protected LED led;
 
@@ -48,7 +49,7 @@ public abstract class AutoBase extends LinearOpMode {
     public static int SIGNAL = -1; // Field Setup scenario
 
     // config switches
-    public static boolean SIGNAL_OVERRIDE = false;
+    public static boolean SIGNAL_OVERRIDE = true; // TODO: Switch back to false
 
     // default values
     private final int defaultSignal = 18; // middle
@@ -67,13 +68,16 @@ public abstract class AutoBase extends LinearOpMode {
 
         // instantiate subsystems
         this.hub = new Hub(hardwareMap);
+            boolean oldStimVal = HardwareCreator.SIMULATE_DRIVETRAIN;
+            HardwareCreator.SIMULATE_DRIVETRAIN = true;
         this.drivetrain = new Drivetrain(hardwareMap, hub);
+            HardwareCreator.SIMULATE_DRIVETRAIN = oldStimVal;
         this.rr = new Roadrunner(hardwareMap,hub, drivetrain);
         this.intake = new Intake(hardwareMap);
         this.outtake = new Outtake(hardwareMap);
-//        this.auto = new AutoCycleWithSensor(this.rr, this.intake, this.outtake);
+        this.auto = new Cycler(this.rr, this.intake, this.outtake);
         Memory.REMEMBERED_OUTTAKE = this.outtake;
-        this.vision = new Vision(hardwareMap);
+//        this.vision = new Vision(hardwareMap);  // TODO: Uncomment when camera is installed
         this.led = new LED(hardwareMap);
 
         this.parker = new PositionMaintainer(new PIDCoefficients(3, 0, 0), new PIDCoefficients(3, 0, 0), HEADING_PID, new Pose2d(0.3, 0.3, Math.toRadians(1)));
@@ -103,7 +107,7 @@ public abstract class AutoBase extends LinearOpMode {
             }
 
             // use vision for signal
-            vision.updatePolling();
+//            vision.updatePolling(); // TODO: Uncomment when camera is installed
             if (!SIGNAL_OVERRIDE) SIGNAL = vision.getReading();
 
             // add telemetry info sheet
@@ -129,13 +133,13 @@ public abstract class AutoBase extends LinearOpMode {
         resetRuntime(); // reset runtime timer
         Memory.saveStringToFile(String.valueOf(System.currentTimeMillis()), Memory.SAVED_TIME_FILE_NAME); // save auto time for persistence
 
-        vision.stopStreaming(); // Takes 0.135 seconds
+//        vision.stopStreaming(); // Takes 0.135 seconds  // TODO: Uncomment when camera is installed
 
         if (isStopRequested()) return; // exit if stopped
 
         // use last detection or default signal if last cycle failed
         if (SIGNAL == -1) {
-            SIGNAL = vision.getLastValidReading();
+//            SIGNAL = vision.getLastValidReading();  // TODO: Uncomment when camera is installed
             if (SIGNAL == -1) SIGNAL = defaultSignal;
         }
 
@@ -194,12 +198,12 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     private void printStartupStatus() {
-        String camStatus;
-        if (SIGNAL_OVERRIDE) camStatus = "OVERRIDE " + SIGNAL;
-        else if (!vision.pipeline.isInitialized()) camStatus = "INITIALIZING";
-        else if (vision.getReading() == -1 && vision.getLastValidReading() != -1) camStatus = "LOST [ " + vision.getLastValidReading() + " ] for " + vision.getFramesWithoutDetection() + " frames";
-        else if (vision.getLastValidReading() == -1) camStatus = "FAILED TO READ";
-        else camStatus = "FOUND [ " + vision.getReading() + " ]";
+//        String camStatus;  // TODO: Uncomment when camera is installed
+//        if (SIGNAL_OVERRIDE) camStatus = "OVERRIDE " + SIGNAL;
+//        else if (!vision.pipeline.isInitialized()) camStatus = "INITIALIZING";
+//        else if (vision.getReading() == -1 && vision.getLastValidReading() != -1) camStatus = "LOST [ " + vision.getLastValidReading() + " ] for " + vision.getFramesWithoutDetection() + " frames";
+//        else if (vision.getLastValidReading() == -1) camStatus = "FAILED TO READ";
+//        else camStatus = "FOUND [ " + vision.getReading() + " ]";
 
 //        String outtakeStatus;
 //        if (Math.max(outtake.getTurretPosition()) < )
@@ -213,8 +217,8 @@ public abstract class AutoBase extends LinearOpMode {
 //            sensorStatus = "READY";
 //        }
 
-        telemetry.addData("Vision", camStatus);
-        telemetry.addData("    Debug", vision.getDebugData());
+//        telemetry.addData("Vision", camStatus);  // TODO: Uncomment when camera is installed
+//        telemetry.addData("    Debug", vision.getDebugData());  // TODO: Uncomment when camera is installed
 //        telemetry.addData("Outtake motors", )
         telemetry.addData("Turret Angle", outtake.getTurretAngle() + " -> " + outtake.getTurretTarget());
         telemetry.addData("Extender Pos", outtake.getSlidePosition() + " -> " + outtake.getSlideTarget());
@@ -269,16 +273,19 @@ public abstract class AutoBase extends LinearOpMode {
         intake.initialize();
 
         // push slide into their limits
+        intake.getExtender().getMotor().setPower(-0.3);
         outtake.getSlide().getMainMotor().setPower(-0.3);
         outtake.getSlide().getSecondMotor().setPower(-0.3);
         sleep(1000);
 
         // stop motors
+        intake.getExtender().getMotor().setPower(0);
         outtake.getSlide().getMainMotor().setPower(0);
         outtake.getSlide().getSecondMotor().setPower(0);
         sleep(100);
 
         // reset the encoders
+        intake.getExtender().zeroMotorInternals();
         outtake.getTurret().setInternalAngle(0);
         outtake.getSlide().zeroMotorInternals();
 
@@ -298,6 +305,7 @@ public abstract class AutoBase extends LinearOpMode {
         telemetry.addData("Runtime", getRuntime());
         telemetry.update();
         outtake.update();
+        intake.update();
     }
 
     // Settings that initialization needs

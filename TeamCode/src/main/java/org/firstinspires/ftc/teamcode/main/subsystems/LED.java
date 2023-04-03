@@ -15,12 +15,12 @@ public class LED {
     BlinkinPattern pattern = null;
 
     public LED(HardwareMap hardwareMap) {
-        ledDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+//        ledDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");  // TODO: Uncomment when LED is installed
         setPattern(BlinkinPattern.BLACK);
     }
 
     public void setPattern(BlinkinPattern pattern) {
-        if (pattern != this.pattern) ledDriver.setPattern(pattern);
+//        if (pattern != this.pattern) ledDriver.setPattern(pattern);  // TODO: Uncomment when LED is installed
         this.pattern = pattern;
     }
 
