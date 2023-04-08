@@ -20,8 +20,8 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = ((((1+(46.0/17))) * (1+(46.0/11))) * 28);
-    public static final double MAX_RPM = 312;
+    public static final double TICKS_PER_REV = ((((1+(46.0/17))) * (1+(46.0/17))) * 28);
+    public static final double MAX_RPM = 435;
 
     /*
      * Set RUN_USING_ENCODER to true to enable built-in hub velocity control using drive encoders.
@@ -45,7 +45,7 @@ public class DriveConstants {
      */
     public static double WHEEL_RADIUS = 48/25.4; // 48mm to inches
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed, reality / expected
-    public static double TRACK_WIDTH = 14.54; // in
+    public static double TRACK_WIDTH = 15.80; // in, measured to be 13 in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -53,9 +53,9 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 0.0165;
-    public static double kA = 0.004;
-    public static double kStatic = 0.07629;
+    public static double kV = 0.0125;
+    public static double kA = 0.0046;
+    public static double kStatic = 0.01;
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,
@@ -64,9 +64,9 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static double MAX_VEL = 60; // 75% of calculated max vel
-    public static double MAX_ACCEL = 60;
-    public static double MAX_ANG_VEL = Math.toRadians(200); // 238° max
+    public static double MAX_VEL = 40; // calculated to be 435/60*48/25.4*2π = 80 in/s, tested to be 65 in/s
+    public static double MAX_ACCEL = 40;
+    public static double MAX_ANG_VEL = Math.toRadians(290); // 326° max
     public static double MAX_ANG_ACCEL = Math.toRadians(150);
 
 
