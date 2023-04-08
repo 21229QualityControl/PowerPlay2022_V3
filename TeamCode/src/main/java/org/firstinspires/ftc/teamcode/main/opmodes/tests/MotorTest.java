@@ -124,13 +124,21 @@ public class MotorTest extends LinearOpMode {
                 POSITION = motor.getCurrentPosition();
                 POWER = 0;
             }
-            // Control brake
-            if (g1.aOnce()) BRAKE = !BRAKE;
             // Control primary
             double leftJoystick = -g1.left_stick_y;
             if (Math.abs(leftJoystick) > 0.01) {
-                if (MODE == Mode.POWER) POWER = Range.clip(POWER + Math.pow(leftJoystick, 3), -1, 1);
-                if (MODE == Mode.VELOCITY) VELOCITY = VELOCITY + Math.pow(leftJoystick, 3);
+                if (MODE == Mode.POWER) POWER = Range.clip(POWER + 0.1*Math.pow(leftJoystick, 3), -1, 1);
+                if (MODE == Mode.VELOCITY) VELOCITY = VELOCITY + 10*Math.pow(leftJoystick, 3);
+                if (MODE == Mode.POSITION) POSITION = POSITION + (int)(10*Math.pow(leftJoystick, 3));
+            }
+            int dpadChange = 0;
+            if (g1.dpadUpOnce()) dpadChange = 1;
+            else if (g1.dpadDownOnce()) dpadChange = -1;
+            else if (g1.dpadRightOnce()) dpadChange = 10;
+            else if (g1.dpadLeftOnce()) dpadChange = -10;
+            if (dpadChange != 0) {
+                if (MODE == Mode.POWER) POWER = Range.clip(POWER + 0.01*dpadChange, -1, 1);
+                if (MODE == Mode.VELOCITY) VELOCITY = VELOCITY + 10*dpadChange;
                 if (MODE == Mode.POSITION) POSITION = POSITION + (int)(10*Math.pow(leftJoystick, 3));
             }
             // Control secondary
@@ -138,11 +146,17 @@ public class MotorTest extends LinearOpMode {
             if (Math.abs(rightJoystick) > 0.01 && MODE == Mode.POSITION) {
                 POWER = Range.clip(Math.abs(POWER) + rightJoystick, 0, 1);
             }
+            // Stop system
+            if (g1.aOnce()) {
+                if (MODE == Mode.POWER) POWER = 0;
+                if (MODE == Mode.VELOCITY) VELOCITY = 0;
+                if (MODE == Mode.POSITION) POWER = 0;
+            }
 
             // Telemetry instructions
             telemetry.addLine("~ Use [X-Power / Y-Velocity / B-Position] to change modes");
-            telemetry.addLine("~ Use A to toggle the zero power behavior");
-            telemetry.addLine("~ Use Left joystick to adjust the primary value [" + (MODE) + "]");
+            telemetry.addLine("~ Use A to stop the motor");
+            telemetry.addLine("~ Use Left joystick or dpad to adjust the primary value [" + (MODE) + "]");
             telemetry.addLine("~ Use Right joystick to adjust the secondary value [" + (MODE == Mode.POSITION ? "POWER" : "N/A") + "]");
             telemetry.addLine();
 
