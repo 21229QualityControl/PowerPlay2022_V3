@@ -17,18 +17,18 @@ public class Intake {
     private Servo claw;
     private Servo vslide;
 
-    public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.013, 0, 0.0001);
+    public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.010, 0, 0.0001);
     private static int EXTENDER_MIN = 0;
     private static int EXTENDER_MAX = 1050; // 1080 is technically the max
     public static int EXTENDER_STORED_POS = 0;
-    public static int EXTENDER_CYCLE_POS = 540;
-    public static int EXTENDER_BEFORE_STACK_POS = 400;
+    public static int EXTENDER_CYCLE_POS = 560;
+    public static int EXTENDER_BEFORE_STACK_POS = 470;
 
     private static double ARM_MIN = 0;
     private static double ARM_MAX = 0.87;
     public static double ARM_STORED_POS = 0.29; // Arm is placed vertical
-    public static double ARM_INTAKING_POS = 0.6; // Claw leveled
-    public static double ARM_TRANSFER_POS = 0.27;
+    public static double ARM_INTAKING_POS = 0.59; // Claw leveled
+    public static double ARM_TRANSFER_POS = 0.25;
     public static double ARM_TRANSFER_COMPLETE_POS = 0.33;
     public static double ARM_ANGLED_DEPOSIT_POS = 0.5; // Claw tilted for front deposit
 
@@ -41,7 +41,7 @@ public class Intake {
 
     private static double VSLIDE_MIN = 0.30;
     private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
-    public static double VSLIDE_TRANSFER = 0.43;
+    public static double VSLIDE_TRANSFER_POS = 0.4;
     public static double VSLIDE_LVL1_POS = 0.3;
     public static double VSLIDE_LVL2_POS = 0.36;
     public static double VSLIDE_LVL3_POS = 0.42;
@@ -60,7 +60,7 @@ public class Intake {
         this.claw = HardwareCreator.createServo(hardwareMap, "intakeClaw", HardwareCreator.ServoType.AXON);
         this.vslide = HardwareCreator.createServo(hardwareMap, "intakeVSlide", HardwareCreator.ServoType.AXON);
 
-        this.extender.setMaxPower(0.8);
+        this.extender.setMaxPower(1.0);
     }
 
     public void initialize() {
@@ -151,7 +151,7 @@ public class Intake {
         this.vslide.setPosition(VSLIDE_MIN);
     }
     public void vslideTransfer() {
-        this.vslide.setPosition(VSLIDE_TRANSFER);
+        this.vslide.setPosition(VSLIDE_TRANSFER_POS);
     }
     public void vslideLevel(int level) {
         switch (level) {

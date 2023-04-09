@@ -68,10 +68,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         // instantiate subsystems
         this.hub = new Hub(hardwareMap);
-            boolean oldStimVal = HardwareCreator.SIMULATE_DRIVETRAIN;
-            HardwareCreator.SIMULATE_DRIVETRAIN = true;
         this.drivetrain = new Drivetrain(hardwareMap, hub);
-            HardwareCreator.SIMULATE_DRIVETRAIN = oldStimVal;
         this.rr = new Roadrunner(hardwareMap,hub, drivetrain);
         this.intake = new Intake(hardwareMap);
         this.outtake = new Outtake(hardwareMap);

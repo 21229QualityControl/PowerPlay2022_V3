@@ -24,11 +24,12 @@ public class Cycler {
                 .setKeepPosition(true)
                 .executeSync(() -> { // move intake out
                     intake.extenderTo(Intake.EXTENDER_BEFORE_STACK_POS);
+//                    intake.extendCycle();
                     intake.vslideLevel(stackLayer);
                     intake.armIntake();
                     intake.clawRelease(); // don't open fully yet
                 })
-                .waitSeconds(0.15)
+                .waitSeconds(0.05)
                 .executeSync(() -> { // raise up
                     outtake.armTiltOut();
                     outtake.guideFlatOut();
@@ -40,10 +41,11 @@ public class Cycler {
                 .executeSync(() -> {
                     outtake.latchBarely();
                 })
-                .waitSeconds(1.15)
+                .waitSeconds(0.5)
                 .executeSync(() -> { // drop cone
                     outtake.latchOpen();
                     outtake.guideRetractDown();
+                    intake.extendCycle(); // extend intake out fully now
                 })
                 .waitSeconds(0.15)
                 .executeSync(() -> { // raise down
@@ -52,40 +54,39 @@ public class Cycler {
                     outtake.guideStoreUp();
                     outtake.armTransfer();
                 })
-                .waitSeconds(0.2)
-                .executeSync(() -> {
-                    intake.extendCycle();
-                })
-                .waitSeconds(0.2)
+//                .waitSeconds(0.1)
+//                .executeSync(() -> {
+//                    intake.extendCycle();
+//                })
+//                .waitSeconds(0.15)
                 .executeSync(() -> { // grab next
                     intake.clawGrab();
                 })
-                .waitSeconds(0.5)
+                .waitSeconds(0.2)
                 .executeSync(() -> { // lift off stack
                     intake.vslideLiftLevel(stackLayer);
                 })
-                .waitSeconds(0.15)
-                .executeSync(() -> { // pull back
+                .waitSeconds(0.1)
+                .executeSync(() -> { // start arm
                     intake.armStore();
+                })
+                .waitSeconds(0.01)
+                .executeSync(() -> { // pull back soon after
                     intake.extendStore();
                 })
-                .waitSeconds(0.3)
+                .waitSeconds(0.1)
                 .executeSync(() -> {
                     intake.armTransfer();
                     intake.vslideTransfer();
                 })
-                .waitSeconds(0.35)
+                .waitSeconds(0.15)
                 .executeSync(() -> { // drop cone onto holder
                     intake.clawWide();
                 })
-                .waitSeconds(0.2)
+                .waitSeconds(0.1)
                 .executeSync(() -> { // move arms to collect
                     outtake.armTransferComplete();
                     intake.armStore();
-                })
-                .waitSeconds(0.3)
-                .executeSync(() -> {
-                    intake.clawClosed();
                 })
                 .waitSeconds(0.05)
                 .build();
@@ -104,22 +105,23 @@ public class Cycler {
                     outtake.guideFlatOut();
                     outtake.raiseHigh();
                     outtake.setTurretAngle(turretAngle);
+                    intake.clawWide(); // open claw wide now
                 })
                 .waitSeconds(0.02)
                 .executeSync(() -> {
                     outtake.latchBarely();
                 })
-                .waitSeconds(1.15)
+                .waitSeconds(0.5)
                 .executeSync(() -> { // drop cone
                     outtake.latchOpen();
                     outtake.guideRetractDown();
-                    intake.clawWide(); // open claw wide now
                 })
                 .waitSeconds(0.15)
                 .executeSync(() -> { // raise down
                     outtake.store();
                     outtake.turretCenter();
                     outtake.guideStoreUp();
+                    outtake.armTransfer();
                 })
                 .waitSeconds(0.4)
                 .build();

@@ -13,7 +13,9 @@ import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 @Config
 @Autonomous(name = "🔴 ◢ Red Right Auto", group = "Auto", preselectTeleOp = "Manual Drive V2")
 public class AutoRedRight_SharedPreload_Cycle_Park extends AutoBase {
-    public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-26, 1)), Math.toRadians(0));
+    public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-33, 0)), Math.toRadians(0));
+    public static double TURRET_ANGLE = -49;
+
     @Override
     protected boolean isBlue() {
         return false;
@@ -37,7 +39,7 @@ public class AutoRedRight_SharedPreload_Cycle_Park extends AutoBase {
         for (int stack = 5; stack > 0; stack--) {
             if (getRuntime() < 23) {
                 Log.d("Autonomous", String.format("cycle(" + stack + ") Start %.3f", getRuntime()));
-                follow(auto.cycle(builder(CYCLE_POSITION.asPose2d()), -38.5, stack, this::getRuntime));
+                follow(auto.cycle(builder(CYCLE_POSITION.asPose2d()), TURRET_ANGLE, stack, this::getRuntime));
                 Log.d("Autonomous", String.format("cycle(" + stack + ") Ended %.3f", getRuntime()));
             } else {
                 Log.d("Autonomous", String.format("cycle(" + stack + ") Skipped %.3f", getRuntime()));
@@ -45,17 +47,17 @@ public class AutoRedRight_SharedPreload_Cycle_Park extends AutoBase {
         }
 
         Log.d("Autonomous", String.format("cycle(last) Start %.3f", getRuntime()));
-        follow(auto.sendLastCone(builder(CYCLE_POSITION.asPose2d()), -38.5));
+        follow(auto.sendLastCone(builder(CYCLE_POSITION.asPose2d()), TURRET_ANGLE));
         Log.d("Autonomous", String.format("cycle(last) Ended %.3f", getRuntime()));
 
-        park();
+//        park();
     }
 
     private void moveToJunction() {
         Log.d("Autonomous", String.format("moveToJunction() Start %.3f", getRuntime()));
         follow(builder()
                 .lineTo(new Vector2d(getStartPose().getX(), CYCLE_POSITION.getY()))
-                .lineToSplineHeading(CYCLE_POSITION.asPose2d())
+                .turnTo(CYCLE_POSITION.getHeading())
                 .build());
 
         Log.d("Autonomous", String.format("moveToJunction() Ended %.3f", getRuntime()));

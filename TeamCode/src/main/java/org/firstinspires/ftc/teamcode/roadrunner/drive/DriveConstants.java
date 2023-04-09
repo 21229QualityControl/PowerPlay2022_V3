@@ -67,7 +67,7 @@ public class DriveConstants {
     public static double MAX_VEL = 40; // calculated to be 435/60*48/25.4*2π = 80 in/s, tested to be 65 in/s
     public static double MAX_ACCEL = 40;
     public static double MAX_ANG_VEL = Math.toRadians(290); // 326° max
-    public static double MAX_ANG_ACCEL = Math.toRadians(150);
+    public static double MAX_ANG_ACCEL = Math.toRadians(200);
 
 
     public static double encoderTicksToInches(double ticks) {

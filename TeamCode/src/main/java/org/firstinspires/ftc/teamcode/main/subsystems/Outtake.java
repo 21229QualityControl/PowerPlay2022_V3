@@ -22,7 +22,7 @@ public class Outtake {
     public static int TURRET_LEFT = 45; // TODO: Tune
     public static int TURRET_RIGHT = -45; // TODO: Tune
 
-    public static PIDCoefficients SLIDE_PID = new PIDCoefficients(0.015, 0, 0.0004);
+    public static PIDCoefficients SLIDE_PID = new PIDCoefficients(0.010, 0, 0.0004);
     private static int SLIDE_MIN = 0;
     private static int SLIDE_MAX = 900;
     public static int SLIDE_HIGH = 600;
@@ -35,7 +35,7 @@ public class Outtake {
     public static double ARM_FLAT_OUT = 0.11;
     public static double ARM_TILT_OUT = 0.17;
     public static double ARM_VERTICAL = 0.38; // might be unnecessary
-    public static double ARM_TRANSFER = 0.76;
+    public static double ARM_TRANSFER = 0.77;
     public static double ARM_TRANSFER_COMPLETE = 0.74; // TODO: Tune
 
     private static double LATCH_MIN = 0.35; // TODO: Tune
@@ -59,18 +59,19 @@ public class Outtake {
 
     public Outtake(HardwareMap hardwareMap) {
         this.turret = new AngleMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeTurret"), TURRET_TICKS_PER_REV, TURRET_PID);
-        this.slide = new DualMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeSlide1"), HardwareCreator.createMotor(hardwareMap, "outtakeSlide2"), true, SLIDE_PID);
+        this.slide = new DualMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeSlide1"), HardwareCreator.createMotor(hardwareMap, "outtakeSlide2"), true,
+                SLIDE_PID, (x, y) -> (x > 50 ? 0.05 : 0.0)); // Feedforward, apply power of 0.05 when pos>50
         this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
 
-        this.slide.setMaxPower(0.6);
+        this.slide.setMaxPower(1.0);
     }
 
     public Outtake(HardwareMap hardwareMap, Outtake previousOuttake) {
         this.turret = previousOuttake.turret;
         this.slide = previousOuttake.slide;
-        this.slide.setDirection(DcMotorSimple.Direction.FORWARD); // reupdate the directions as the dcmotors forget
+        this.slide.setDirection(DcMotorSimple.Direction.FORWARD);
         this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
