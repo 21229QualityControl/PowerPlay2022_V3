@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.main.environment.FieldConstants;
 import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
-@Autonomous(name = "🔴 ◢ Red Right Auto", group = "Auto", preselectTeleOp = "Manual Drive V2")
-public class AutoRedRight_SharedPreload_Cycle_Park extends AutoBase {
+@Autonomous(name = "🔴 ◢ Red Right Auto Shared 1+5", group = "Auto Shared 1+5", preselectTeleOp = "Manual Drive")
+public class AutoRedRight_Shared_1_Plus_5_Park extends AutoBase {
     public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-33, 0)), Math.toRadians(0));
     public static double TURRET_ANGLE = -49;
 
