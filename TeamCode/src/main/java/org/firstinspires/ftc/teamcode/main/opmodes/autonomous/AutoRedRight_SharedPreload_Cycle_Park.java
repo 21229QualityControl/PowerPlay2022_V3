@@ -57,7 +57,10 @@ public class AutoRedRight_SharedPreload_Cycle_Park extends AutoBase {
         Log.d("Autonomous", String.format("moveToJunction() Start %.3f", getRuntime()));
         follow(builder()
                 .lineTo(new Vector2d(getStartPose().getX(), CYCLE_POSITION.getY()))
-                .turnTo(CYCLE_POSITION.getHeading())
+                .build());
+        follow(builder(CYCLE_POSITION.asPose2d())
+                .setKeepPosition(true)
+                .waitForCondition(() -> rr.getTrajectorySequenceRunner().isPositionMaintainerBusy(), 500)
                 .build());
 
         Log.d("Autonomous", String.format("moveToJunction() Ended %.3f", getRuntime()));

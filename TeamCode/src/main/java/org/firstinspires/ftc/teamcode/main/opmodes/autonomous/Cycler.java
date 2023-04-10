@@ -22,73 +22,87 @@ public class Cycler {
     public TrajectorySequence cycle(TrajectorySequenceBuilder builder, double turretAngle, int stackLayer, Supplier<Double> runtimeSupplier) {
         return builder
                 .setKeepPosition(true)
-                .executeSync(() -> { // move intake out
+                .executeSync(() -> {
+                    // move intake out
                     intake.extenderTo(Intake.EXTENDER_BEFORE_STACK_POS);
-//                    intake.extendCycle();
                     intake.vslideLevel(stackLayer);
                     intake.armIntake();
                     intake.clawRelease(); // don't open fully yet
-                })
-                .waitSeconds(0.05)
-                .executeSync(() -> { // raise up
+
+                    waitSeconds(0.1);
+                    if (Thread.interrupted()) return;
+
+                    // raise up
                     outtake.armTiltOut();
                     outtake.guideFlatOut();
                     outtake.raiseHigh();
                     outtake.setTurretAngle(turretAngle);
                     intake.clawWide(); // open claw wide now
-                })
-                .waitSeconds(0.02)
-                .executeSync(() -> {
+
+                    waitSeconds(0.1);
+                    if (Thread.interrupted()) return;
+
                     outtake.latchBarely();
-                })
-                .waitSeconds(0.5)
-                .executeSync(() -> { // drop cone
+
+                    waitSeconds(0.4);
+                    if (Thread.interrupted()) return;
+
+                    // drop cone
                     outtake.latchOpen();
                     outtake.guideRetractDown();
                     intake.extendCycle(); // extend intake out fully now
-                })
-                .waitSeconds(0.15)
-                .executeSync(() -> { // raise down
+
+                    waitSeconds(0.25);
+                    if (Thread.interrupted()) return;
+
+                    // raise down
                     outtake.store();
                     outtake.turretCenter();
                     outtake.guideStoreUp();
                     outtake.armTransfer();
-                })
-//                .waitSeconds(0.1)
-//                .executeSync(() -> {
-//                    intake.extendCycle();
-//                })
-//                .waitSeconds(0.15)
-                .executeSync(() -> { // grab next
+
+                    // grab next
                     intake.clawGrab();
-                })
-                .waitSeconds(0.2)
-                .executeSync(() -> { // lift off stack
+
+                    waitSeconds(0.3);
+                    if (Thread.interrupted()) return;
+
+                    // lift off stack
                     intake.vslideLiftLevel(stackLayer);
-                })
-                .waitSeconds(0.1)
-                .executeSync(() -> { // start arm
+
+                    waitSeconds(0.2);
+                    if (Thread.interrupted()) return;
+
+                    // start arm
                     intake.armStore();
-                })
-                .waitSeconds(0.01)
-                .executeSync(() -> { // pull back soon after
+
+                    waitSeconds(0.1);
+                    if (Thread.interrupted()) return;
+
+                    // pull back soon after
                     intake.extendStore();
-                })
-                .waitSeconds(0.1)
-                .executeSync(() -> {
+
+                    waitSeconds(0.2);
+                    if (Thread.interrupted()) return;
+
                     intake.armTransfer();
                     intake.vslideTransfer();
-                })
-                .waitSeconds(0.15)
-                .executeSync(() -> { // drop cone onto holder
+
+                    waitSeconds(0.35);
+                    if (Thread.interrupted()) return;
+
+                    // drop cone onto holder
                     intake.clawWide();
-                })
-                .waitSeconds(0.1)
-                .executeSync(() -> { // move arms to collect
+
+                    waitSeconds(0.2);
+                    if (Thread.interrupted()) return;
+
+                    // move arms to collect
                     outtake.armTransferComplete();
                     intake.armStore();
+
+                    waitSeconds(0.15);
                 })
-                .waitSeconds(0.05)
                 .build();
     }
 
@@ -98,32 +112,40 @@ public class Cycler {
                 .executeSync(() -> { // move intake out of the way
                     intake.armStore();
                     intake.clawClosed();
-                })
-                .waitSeconds(0.15)
-                .executeSync(() -> { // raise up
+
+                    waitSeconds(0.1);
+                    if (Thread.interrupted()) return;
+
+                    // raise up
                     outtake.armTiltOut();
                     outtake.guideFlatOut();
                     outtake.raiseHigh();
                     outtake.setTurretAngle(turretAngle);
                     intake.clawWide(); // open claw wide now
-                })
-                .waitSeconds(0.02)
-                .executeSync(() -> {
+
+                    waitSeconds(0.1);
+                    if (Thread.interrupted()) return;
+
                     outtake.latchBarely();
-                })
-                .waitSeconds(0.5)
-                .executeSync(() -> { // drop cone
+
+                    waitSeconds(0.4);
+                    if (Thread.interrupted()) return;
+
+                    // drop cone
                     outtake.latchOpen();
                     outtake.guideRetractDown();
-                })
-                .waitSeconds(0.15)
-                .executeSync(() -> { // raise down
+
+                    waitSeconds(0.25);
+                    if (Thread.interrupted()) return;
+
+                    // raise down
                     outtake.store();
                     outtake.turretCenter();
                     outtake.guideStoreUp();
                     outtake.armTransfer();
+
+                    waitSeconds(0.4);
                 })
-                .waitSeconds(0.4)
                 .build();
     }
 
@@ -162,5 +184,13 @@ public class Cycler {
                 })
                 .waitSeconds(0.05)
                 .build();
+    }
+
+    private void waitSeconds(double seconds) {
+        try {
+            Thread.sleep((long) (seconds * 1000));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Preserve interrupted status
+        }
     }
 }
