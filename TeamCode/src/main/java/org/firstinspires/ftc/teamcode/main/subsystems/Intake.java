@@ -21,13 +21,14 @@ public class Intake {
     private static int EXTENDER_MIN = 0;
     private static int EXTENDER_MAX = 1050; // 1080 is technically the max
     public static int EXTENDER_STORED_POS = 0;
-    public static int EXTENDER_CYCLE_POS = 560;
+    public static int EXTENDER_CYCLE_POS = 560; // 560 for auto
+    public static int EXTENDER_CYCLE_TELEOP_POS = 510;
     public static int EXTENDER_BEFORE_STACK_POS = 470;
 
     private static double ARM_MIN = 0;
     private static double ARM_MAX = 0.87;
-    public static double ARM_STORED_POS = 0.29; // Arm is placed vertical
-    public static double ARM_INTAKING_POS = 0.59; // Claw leveled
+    public static double ARM_STORED_POS = 0.30; // Arm is placed vertical
+    public static double ARM_INTAKING_POS = 0.595; // Claw leveled
     public static double ARM_TRANSFER_POS = 0.25;
     public static double ARM_TRANSFER_COMPLETE_POS = 0.33;
     public static double ARM_ANGLED_DEPOSIT_POS = 0.5; // Claw tilted for front deposit
@@ -83,6 +84,9 @@ public class Intake {
     }
     public void extendCycle() {
         this.extender.setTargetPosition(EXTENDER_CYCLE_POS);
+    }
+    public void extendCycleTeleop() {
+        this.extender.setTargetPosition(EXTENDER_CYCLE_TELEOP_POS);
     }
     public int getExtenderTarget() {
         return this.extender.getTargetPosition();
@@ -149,6 +153,9 @@ public class Intake {
     }
     public void vslideDown() {
         this.vslide.setPosition(VSLIDE_MIN);
+    }
+    public void vslideTop() {
+        this.vslide.setPosition(VSLIDE_MAX);
     }
     public void vslideTransfer() {
         this.vslide.setPosition(VSLIDE_TRANSFER_POS);

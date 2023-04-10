@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.main.subsystems;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.Locale;
+
 public class SmartGameTimer {
     private double offset;
     private TIMER_START_MODE mode;
@@ -48,6 +50,14 @@ public class SmartGameTimer {
         return elapsedTime.seconds() + offset;
     }
 
+    /**
+     * Formats time as -mm:ss. e.g. " 01:30" or "-00:27")
+     */
+    public String formattedString() {
+        int secLeft = (int) (120 - seconds());
+        return String.format(Locale.ENGLISH, "%s%02d:%02d", secLeft<0?"-":" ", Math.abs(secLeft / 60), Math.abs(secLeft % 60));
+    }
+
     public void reset() {
         offset = 0;
         elapsedTime.reset();
@@ -69,5 +79,12 @@ public class SmartGameTimer {
 
     public boolean isLikelyWrong() {
         return mode == TIMER_START_MODE.STANDARD_FALLBACK;
+    }
+
+    public String status() {
+        if (isRecovered()) return "recovered";
+        if (isNominal()) return "normal";
+        if (isLikelyWrong()) return "no reference";
+        return "unknown state";
     }
 }

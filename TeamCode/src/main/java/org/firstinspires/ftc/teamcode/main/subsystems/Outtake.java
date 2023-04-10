@@ -19,15 +19,15 @@ public class Outtake {
     private static double TURRET_MIN = -90; // TODO: Tune
     private static double TURRET_MAX = 90; // TODO: Tune
     public static int TURRET_CENTER = 0; // Initialize with turret centered
-    public static int TURRET_LEFT = 45; // TODO: Tune
-    public static int TURRET_RIGHT = -45; // TODO: Tune
+    public static int TURRET_LEFT = 52;
+    public static int TURRET_RIGHT = -52;
 
     public static PIDCoefficients SLIDE_PID = new PIDCoefficients(0.010, 0, 0.0004);
     private static int SLIDE_MIN = 0;
     private static int SLIDE_MAX = 900;
     public static int SLIDE_HIGH = 600;
     public static int SLIDE_MID = 270;
-    public static int SLIDE_LOW = 100;
+    public static int SLIDE_LOW = 0;
     public static int SLIDE_STORED = 0;
 
     private static double ARM_MIN = 0;
@@ -48,7 +48,7 @@ public class Outtake {
     private static double GUIDE_MAX = 0;
     public static double GUIDE_FLAT_OUT = 0.4;
     public static double GUIDE_RETRACT_DOWN = 0.75;
-    public static double GUIDE_STORE_UP = 0.05;
+    public static double GUIDE_STORE_UP = 0.75; // 0.05 actually up
     public static double GUIDE_INIT = 0.75;
 
     private DualMotorWithPID slide;
@@ -56,6 +56,8 @@ public class Outtake {
     private Servo latch;
     private Servo arm;
     private Servo guide;
+
+    private boolean outtakePidEnabled = true;
 
     public Outtake(HardwareMap hardwareMap) {
         this.turret = new AngleMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeTurret"), TURRET_TICKS_PER_REV, TURRET_PID);
@@ -89,7 +91,7 @@ public class Outtake {
 
     public void update() {
         turret.update();
-        slide.update();
+        if (outtakePidEnabled) slide.update();
     }
 
     // Outtake Arm
@@ -111,6 +113,9 @@ public class Outtake {
     public void armTransferComplete() {
         this.arm.setPosition(ARM_TRANSFER_COMPLETE);
     }
+    public double getArmPosition() {
+        return this.arm.getPosition();
+    }
 
     // Latch movements
     public void setLatchPosition(double pos) {
@@ -125,6 +130,9 @@ public class Outtake {
     public void latchEngaged() {
         this.latch.setPosition(LATCH_ENGAGED);
     }
+    public double getLatchPosition() {
+        return this.latch.getPosition();
+    }
 
     // Guide
     public void setGuidePosition(double pos) {
@@ -138,6 +146,9 @@ public class Outtake {
     }
     public void guideRetractDown() {
         guide.setPosition(GUIDE_RETRACT_DOWN);
+    }
+    public double getGuidePosition() {
+        return this.guide.getPosition();
     }
 
     // Slide movements
@@ -208,7 +219,7 @@ public class Outtake {
         guideStoreUp();
         latchOpen();
     }
-    private void raisePrep() {
+    public void scheduleLatch() {
         new Thread(() -> { // TODO: Refactor this into planner
             try {
                 Thread.sleep(20);
@@ -217,12 +228,11 @@ public class Outtake {
                 throw new RuntimeException(e);
             }
         }).start();
-        armTiltOut();
-        guideFlatOut();
     }
-    public void raiseLow() {
-        raisePrep();
-        slideLow();
+    public void raisePrep() {
+        scheduleLatch();
+        armTiltOut(); // TODO: Put in planner, delay until we reach near top of target
+        guideFlatOut();
     }
     public void raiseMid() {
         raisePrep();
@@ -231,5 +241,28 @@ public class Outtake {
     public void raiseHigh() {
         raisePrep();
         slideHigh();
+    }
+
+    // *** overrides for outtake control *** //
+
+    public void enableOuttakePID() {
+        if (!outtakePidEnabled) {
+            outtakePidEnabled = true;
+            slide.setTargetPosition(slide.getCurrentPosition());
+            slide.resetIntegralGain();
+        }
+    }
+
+    public void disableOuttakePID() {
+        if (outtakePidEnabled) {
+            outtakePidEnabled = false;
+        }
+    }
+
+    public void setOuttakeOverridePower(double power) {
+        if (!outtakePidEnabled) {
+            slide.getMainMotor().setPower(power);
+            slide.getSecondMotor().setPower(power);
+        }
     }
 }

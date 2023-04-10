@@ -6,10 +6,13 @@ import static org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner.KEEP_POS
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.Cycler;
 import org.firstinspires.ftc.teamcode.main.subsystems.Dashboard;
@@ -23,6 +26,7 @@ import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
 import org.firstinspires.ftc.teamcode.main.subsystems.SmartGameTimer;
 import org.firstinspires.ftc.teamcode.roadrunner.PositionMaintainer;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
 
 import java.util.List;
 
@@ -33,12 +37,31 @@ import java.util.List;
  *
  * Player 1:
  * - Strafe (Left Stick)
- * - Full speed (hold Left Stick Button)
- * - Slow speed toggle (X)
+ * - Slow mode Toggle (Left Stick Button, when not keeping position)
+ * - Keep Position mode Toggle (Back) (Left Stick Button to disable)
  * - Turns (Bumpers and Triggers)
+ * - Grab (A)
+ * - Release (B)
+ * - Transfer (Y)
+ * - Storage (X, only when arm is flat)
+ * - Go to intake (X, when arm is angled)
+ * - Low junction (Right stick button)
+ * - Adjust arm (Right Stick Y)
+ * - Adjust wrist (Right Stick X)
+ * - Stack adjust (dpad up/down)
+ * - Stack auto cycle (A hold)
+ * - Extender toggle (Start)
+ * - Keep position toggle (Back)
+ * - Auto grab/transfer toggle (Guide)
  *
  * Player 2:
- * - N/A
+ * - Outtake mid (X)
+ * - Outtake high (Y)
+ * - Retract down (A)
+ * - Turret left/mid/right (Left/Right Bumper)
+ * - Turret adjustment (Triggers or Right Stick X)
+ * - Outtake adjustment (Left Stick Y)
+ * -
  */
 @Config
 @TeleOp(group = "Drive", name = "Manual Drive")
@@ -47,6 +70,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN = 0.2;
     public static double SPEED_CONSTANT = 0.8;
     public static double TURN_CONSTANT = 0.9;
+    public static double AUTO_TRANSFER_COOLDOWN = 200; // ms
 
     private Drivetrain drivetrain;
     private Roadrunner roadrunner;
@@ -63,12 +87,17 @@ public class ManualDrive extends LinearOpMode {
     private GamePadController g1, g2;
 
     private boolean isSlow = false;
-    private boolean slideExtend = false;
-    private boolean armOut = false;
+    private boolean keepPosition = false;
+    private boolean extendIntake = true;
+    private boolean autoStack = false;
+    private boolean autoTransfer = false;
+    private int stacknum = 1; // 1-5
+    private double raisedTurretAngle = 0;
 
     private boolean warning1 = false;
     private boolean warning2 = false;
     private boolean warning3 = false;
+    private boolean warning4 = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -91,6 +120,7 @@ public class ManualDrive extends LinearOpMode {
             outtake = new Outtake(hardwareMap);
             outtake.getSlide().getMainMotor().setPower(-0.3);
             outtake.getSlide().getSecondMotor().setPower(-0.3);
+            intake.getExtender().getMotor().setPower(-0.3);
 
             smartGameTimer = new SmartGameTimer(false);
         }
@@ -103,6 +133,8 @@ public class ManualDrive extends LinearOpMode {
         intake.initialize();
         outtake.initialize();
         outtake.setTurretAngle(0);
+
+        autoTransferTimer = new ElapsedTime();
 
         // Wait for start
         while (opModeInInit()) {
@@ -127,8 +159,16 @@ public class ManualDrive extends LinearOpMode {
             g1.reset();
             g2.reset();
 
-            outtake.initialize();
-            intake.initialize();
+            // finish zeroing outtake motors if transition failed
+            if (!smartGameTimer.isNominal()) {
+                outtake.getSlide().getMainMotor().setPower(0);
+                outtake.getSlide().getSecondMotor().setPower(0);
+                intake.getExtender().getMotor().setPower(0);
+                sleep(20);
+                outtake.getSlide().zeroMotorInternals();
+                intake.getExtender().zeroMotorInternals();
+            }
+            smartGameTimer.resetIfStandard();
         }
 
         // While running
@@ -159,20 +199,30 @@ public class ManualDrive extends LinearOpMode {
     private void sendTelemetry() {
         List<Double> vels = drivetrain.getMotorPowers();
         Dashboard.packet.put("Battery Voltage", hub.getVoltage());
-        Dashboard.packet.put("Runtime", getRuntime());
-        telemetry.addData("Runtime", getRuntime());
-        telemetry.addData("Pos", roadrunner.getPoseEstimate());
-        telemetry.addData("Vel", roadrunner.getPoseVelocity());
+        Dashboard.packet.put("Runtime", smartGameTimer.seconds());
+        telemetry.addData("Time left", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
+        telemetry.addData("Turret Angle", outtake.getTurretAngle() + " -> " + outtake.getTurretTarget());
+        telemetry.addData("Outtake Pos", outtake.getSlidePosition() + " -> " + outtake.getSlideTarget());
+        telemetry.addData("Extender Pos", intake.getExtenderPosition() + " -> " + intake.getExtenderTarget());
         telemetry.addData("Power", "\n   %4.0f%% | %4.0f%% \n   %4.0f%% | %4.0f%%", vels.get(0)*100, vels.get(3)*100, vels.get(1)*100, vels.get(2)*100);
-
-        telemetry.addData("Debug: Arm Out", armOut);
         telemetry.update();
     }
 
     private void move() {
-        if (g1.leftStickButtonOnce()) isSlow = !isSlow;
-        else if (g1.leftStickButtonLong()) isSlow = false;
+        // Toggle slow mode, or turn off keepPosition if it is on
+        if (g1.leftStickButtonOnce()) {
+            if (keepPosition) keepPosition = false;
+            else isSlow = !isSlow;
+        }
 
+        // Toggle keep position mode
+        if (g1.backOnce()) {
+            keepPosition = !keepPosition;
+            positionMaintainer.resetController();
+            positionMaintainer.maintainPosition(roadrunner.getPoseEstimate());
+        }
+
+        // Movement inputs
         double input_x = Math.pow(-g1.left_stick_y, 3) * (g1.leftStickButton() ? 1 : (isSlow ? SLOW_SPEED : SPEED_CONSTANT));
         double input_y = Math.pow(-g1.left_stick_x, 3) * (g1.leftStickButton() ? 1 : (isSlow ? SLOW_SPEED : SPEED_CONSTANT));
         double input_turn = (g1.left_trigger - g1.right_trigger) * TURN_CONSTANT;
@@ -180,36 +230,48 @@ public class ManualDrive extends LinearOpMode {
         if (g1.leftBumper()) input_turn += SLOW_TURN;
         if (g1.rightBumper()) input_turn -= SLOW_TURN;
 
-        roadrunner.setDrivePower(new Pose2d(input_x, input_y, input_turn));
+        // Set motor powers
+        if (keepPosition) {
+            // Update maintained position
+            Pose2d maintainedPose = positionMaintainer.getMaintainedPosition();
+            Pose2d offset = new Pose2d(new Vector2d(input_x * 0.2, input_y * 0.2).rotated(maintainedPose.getHeading()), input_turn * 0.05);
+            Pose2d newMaintainedPose = maintainedPose.plus(offset);
+            positionMaintainer.maintainPosition(newMaintainedPose);
+
+            roadrunner.setDriveSignal(positionMaintainer.update(roadrunner.getPoseEstimate(), roadrunner.getPoseVelocity()));
+        } else {
+            roadrunner.setDrivePower(new Pose2d(input_x, input_y, input_turn));
+        }
     }
 
     private void intakeControls() {
-        if (g1.startOnce()) { // Toggle extension setting
-            if (slideExtend) { // turn it off
-                intake.extendStore();
-                slideExtend = false;
-            } else { // turn it on
-                intake.extendCycle();
-                slideExtend = true;
-            }
+        // Open/Close Claw (A/B)
+        if (g1.aOnce()) { // grab
+            intake.clawGrab();
+        }
+        if (g1.bOnce()) { // release
+            if (intake.isArmFlat() || (intake.isArmOut() && !intake.isClawClosed()) || (intake.isArmBlockingOuttake())) intake.clawWide();
+            else intake.clawRelease();
         }
 
-        if (g1.xOnce()) {
-            if (armOut) { // X to bring in arm and claw
-                intake.extendStore();
-                intake.armStore();
-                intake.clawGrab();
-                intake.vslideDown();
-                armOut = false;
-            } else { // X to put out arm and claw
-                if (slideExtend) intake.extendCycle();
-                intake.armIntake();
-                intake.clawWide();
-                intake.vslideLevel(1);
-                armOut = true;
-            }
-        }
-        if (g1.yOnce()) { // Y to transfer
+//        // Auto transfer
+//        if (g1.guideOnce()) autoTransfer = !autoTransfer;
+//        if (autoTransfer && intake.isArmFlat() && intake.isClawOpen() && autoTransferTimer.milliseconds() > AUTO_TRANSFER_COOLDOWN) {
+//            if (intake.doesClawSeeCone()) {
+//                autoTransferTimer.reset();
+//                new Thread(() -> {
+//                    intake.clawGrab(); // grab
+//                    sleep(100);
+//                    intake.liftUp(); // transfer
+//                    intake.armIn();
+//                    intake.wristInside();
+//                    intake.extendTransfer();
+//                }).start();
+//            }
+//        }
+
+        // Go Transfer (Y)
+        if (g1.yOnce()) {
             intake.extendStore();
             intake.clawGrab();
             intake.extendStore();
@@ -218,82 +280,105 @@ public class ManualDrive extends LinearOpMode {
             intake.vslideTransfer();
 
             new Thread(() -> { // TODO: Better wait solution
-                sleep(500);
+                sleep(250);
                 intake.armTransfer();
                 sleep(500);
                 intake.clawWide();
-                sleep(500);
+                sleep(300);
                 intake.vslideDown();
                 intake.armStore();
                 intake.clawGrab();
-                armOut = false;
             }).start();
         }
-        if (g1.aOnce()) { // A to grab
-            intake.clawGrab();
+
+        // Go Storage or Intake (X)
+        if (g1.xOnce()) {
+            if (intake.isArmOut()) { // Go Storage
+                intake.extendStore();
+                intake.armStore();
+                intake.vslideDown();
+            } else { // Go Intake
+                if (extendIntake) intake.extendCycleTeleop();
+                intake.armIntake();
+                intake.vslideLevel(1);
+                intake.clawWide();
+//                autoTransferTimer.reset();
+            }
         }
-        if (g1.bOnce()) { // B to let go
-            if (intake.isArmFlat() || (intake.isArmOut() && !intake.isClawClosed()) || (intake.isArmBlockingOuttake())) intake.clawWide();
-            else intake.clawRelease();
+
+        // Go Low Junction (RightStickButton)
+        if (g1.rightStickButtonOnce()) {
+            intake.vslideTop();
+            intake.armAngledDeposit();
         }
-    }
 
-    enum TURRET_POS {
-        LEFT,
-        CENTER,
-        RIGHT,
-    }
-    public static TURRET_POS turretPos = TURRET_POS.CENTER;
+        // Toggle extension
+        if (g1.startOnce()) {
+            extendIntake = !extendIntake;
+            if (extendIntake) intake.extendCycleTeleop();
+            else intake.extendStore();
+        }
 
-    private void moveTurret() {
-        switch (turretPos) {
-            case LEFT:
-                outtake.turretLeft();
-                break;
+        // Adjust arm (RightStickY)
+        double armStick = -g1.right_stick_y;
+        if (Math.abs(armStick) > 0.01 && Math.abs(armStick) > Math.abs(g1.right_stick_x)) {
+            intake.setArmPosition(intake.getArmPosition() + armStick * -0.015);
+        }
 
-            case RIGHT:
-                outtake.turretRight();
-                break;
+        // Adjust stack level
+        if (g1.dpadUpOnce() || g1.dpadDownOnce()) {
+            if (g1.dpadUpOnce()) stacknum++;
+            if (g1.dpadDownOnce()) stacknum--;
+            stacknum = Range.clip(stacknum, 1, 5);
 
-            case CENTER:
-                outtake.turretCenter();
-                break;
+            if (extendIntake) { // will prepare for auto-cycle only when extending out
+                intake.clawWide();
+                intake.extendCycleTeleop();
+                intake.armIntake();
+            }
+            intake.vslideLevel(stacknum);
+            autoTransferTimer.reset();
+        }
+
+        // Auto stack cycle
+        if (g1.aLongOnce()) {
+            autoStackCycle();
         }
     }
 
     private void outtakeControls() {
-        if (g2.dpadUpOnce()) { // Dpad up to raise high
+        // Outtake high (dpad up)
+        if (g2.dpadUpOnce()) {
             intake.armStore();
             intake.vslideDown();
-            armOut = false;
 
-            moveTurret();
+            outtake.setTurretAngle(raisedTurretAngle);
             outtake.raiseHigh();
         }
-        if (g2.dpadRightOnce()) { // Dpad right to raise mid
+
+        // Outtake mid (dpad right)
+        if (g2.dpadRightOnce()) {
             intake.armStore();
             intake.vslideDown();
-            armOut = false;
 
-            moveTurret();
+            outtake.setTurretAngle(raisedTurretAngle);
             outtake.raiseMid();
         }
-        if (g2.dpadDownOnce()) { // Dpad down to raise low
+
+        // Outtake low (dpad down)
+        if (g2.dpadDownOnce()) {
             intake.armStore();
             intake.vslideDown();
-            armOut = false;
 
-            moveTurret();
-            outtake.raiseLow();
+            outtake.turretCenter();
+            outtake.scheduleLatch();
+            outtake.armFlatOut();
+            outtake.slideLow();
+            outtake.guideRetractDown();
         }
-        if (g2.dpadLeftOnce()) { // Dpad left to slightly lower slide (good for aiming)
-            intake.armStore();
-            intake.vslideDown();
-            armOut = false;
 
-            outtake.setSlidePosition(outtake.getSlidePosition() - 100);
-        }
-        if (g2.bOnce()) { // B to score
+        // Score and retract (A)
+        if (g2.aOnce()) {
             outtake.latchOpen();
             outtake.guideRetractDown();
             new Thread(() -> { // TODO: Better wait solution
@@ -303,44 +388,88 @@ public class ManualDrive extends LinearOpMode {
                 outtake.guideStoreUp();
             }).start();
         }
-        if (g2.rightBumperOnce()) { // Right bumper to point turret right
-            turretPos = TURRET_POS.RIGHT;
+
+        // Move guide and arm out (Y)
+        if (g2.yOnce()) {
+            outtake.raisePrep();
         }
-        if (g2.leftBumperOnce()) { // Left bumper to point turret left
-            turretPos = TURRET_POS.LEFT;
+
+        // Turret presets (Bumpers and X)
+        if (g2.leftBumperOnce()) {
+            raisedTurretAngle = Outtake.TURRET_LEFT;
+            if (outtake.getSlideTarget() > 50) outtake.setTurretAngle(raisedTurretAngle); // update turret
+        } else if (g2.rightBumperOnce()) {
+            raisedTurretAngle = Outtake.TURRET_RIGHT;
+            if (outtake.getSlideTarget() > 50) outtake.setTurretAngle(raisedTurretAngle); // update turret
+        } else if (g2.xOnce()) {
+            raisedTurretAngle = Outtake.TURRET_CENTER;
+            if (outtake.getSlideTarget() > 50) outtake.setTurretAngle(raisedTurretAngle); // update turret
         }
-        if (g2.xOnce()) { // X to center turret
-            turretPos = TURRET_POS.CENTER;
+
+        // Turret adjustment (Triggers)
+        double triggers = g2.left_trigger - g2.right_trigger;
+        if (Math.abs(triggers) > 0.01) {
+            raisedTurretAngle = raisedTurretAngle + triggers*2;
+            if (outtake.getSlideTarget() > 50) outtake.setTurretAngle(raisedTurretAngle); // update turret
+        }
+
+        // Slide adjustment (Left stick Y)
+        double slideStick = -g2.left_stick_y;
+        if (Math.abs(slideStick) < 0.01) { // if stick not engaged, use PID
+            outtake.enableOuttakePID();
+        } else if (slideStick < 0 && outtake.getSlidePosition() <= 10) { // if forcing down, target bottom
+            outtake.enableOuttakePID();
+            outtake.turretCenter(); // center turret when too low
+        } else { // if stick is engaged and not forcing down, apply manual power
+            outtake.disableOuttakePID();
+            outtake.setOuttakeOverridePower(Math.pow(slideStick, 3) * 0.5);
+            raisedTurretAngle = outtake.getTurretAngle();
+            if (outtake.getSlidePosition() < 80) { // center turret if too low
+                outtake.turretCenter();
+            }
+        }
+
+        // Arm adjustment (Right stick Y)
+        double armStick = -g2.right_stick_y;
+        if (Math.abs(armStick) > 0.01) {
+            outtake.setArmPosition(outtake.getArmPosition() + armStick * -0.015);
         }
     }
 
     private double timeLeft() {
         if (!isStarted()) return 120;
-        return 120 - getRuntime();
+        return 120 - smartGameTimer.seconds();
     }
     private boolean isBetween(double number, double min, double max) {
         return min <= number && number < max;
     }
 
     private void warnings() {
-        if (isBetween(timeLeft(), 0, 5)) { // last 5 sec, go park
-            if (!warning3) {
-                g1.rumbleBlips(1);
-                warning3 = true;
-            }
-            //led.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED); // WARNING: The rules prohibit flashing at a frequency faster than one blink per second
-        } else if (isBetween(timeLeft(), 27, 30)) { // 30-29; endgame starts
-            if (!warning2) {
-                g1.rumbleBlips(2);
-                warning2 = true;
-            }
-            //led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_WITH_GLITTER);
-        } else if (isBetween(timeLeft(), 40, 45)) { // 45-40; start capping
+        // CAUTION: The rules prohibit flashing at a frequency faster than one blink per second
+        if (isBetween(timeLeft(), 65, 75)) { // 75-70; start owning junctions
+            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
             if (!warning1) {
                 g1.rumbleBlips(3);
                 warning1 = true;
             }
-            //led.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_WHITE);
+        } else if (isBetween(timeLeft(), 31, 35)) { // 35-31; prepare for endgame
+            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+            if (!warning2) {
+                g1.rumbleBlips(3);
+                warning2 = true;
+            }
+        } else if (isBetween(timeLeft(), 25, 30)) { // 30-25; endgame starts
+            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_WITH_GLITTER);
+            if (!warning3) {
+                g1.rumbleBlips(3);
+                warning3 = true;
+            }
+        } else if (isBetween(timeLeft(), 0, 5)) { // last 5 sec, go park
+            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+            if (!warning4) {
+                g1.rumbleBlips(3);
+                warning4 = true;
+            }
         } else { // default lights, put here for lower priority
             showGameLights();
         }
@@ -348,5 +477,60 @@ public class ManualDrive extends LinearOpMode {
 
     private void showGameLights() { // TODO: Implement
         // Custom light patterns when resetting an encoder, running automation, sensors activating, etc.
+        // These are lower priority than the patterns in warnings()
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+    }
+
+    private void autoStackControls() {
+        g1.update();
+        g2.update();
+        // Turret
+        double triggers = Range.clip((g2.left_trigger - g2.right_trigger) + (g1.left_trigger - g1.right_trigger), -1, 1);
+        if (triggers != 0) {
+            raisedTurretAngle = outtake.getTurretTarget() + triggers;
+        }
+
+        // Turret presets (Bumpers and X)
+        if (g2.leftBumperOnce()) {
+            raisedTurretAngle = Outtake.TURRET_LEFT;
+            if (outtake.getSlideTarget() > 50) outtake.setTurretAngle(raisedTurretAngle); // update turret
+        } else if (g2.rightBumperOnce()) {
+            raisedTurretAngle = Outtake.TURRET_RIGHT;
+            if (outtake.getSlideTarget() > 50) outtake.setTurretAngle(raisedTurretAngle); // update turret
+        } else if (g2.xOnce()) {
+            raisedTurretAngle = Outtake.TURRET_CENTER;
+            if (outtake.getSlideTarget() > 50) outtake.setTurretAngle(raisedTurretAngle); // update turret
+        }
+
+        // Abort
+        if (g1.xOnce() || !autoStack) {
+            roadrunner.stopTrajectory();
+            autoStack = false;
+        }
+
+        telemetry.addData("Turret Angle", outtake.getTurretAngle() + " -> " + outtake.getTurretTarget());
+        telemetry.addData("Extender Pos", outtake.getSlidePosition() + " -> " + outtake.getSlidePosition());
+        telemetry.update();
+    }
+
+    private void autoStackCycle() {
+        Pose2d pose = roadrunner.getPoseEstimate();
+        autoStack = true;
+
+        roadrunner.followTrajectorySequence(auto.grabAndTransfer(builder(pose), stacknum));
+        stacknum--;
+
+        while (stacknum > 0 && autoStack) {
+            roadrunner.followTrajectorySequence(auto.cycle(builder(pose), raisedTurretAngle, stacknum, null));
+            if (!autoStack) return;
+            stacknum--;
+        }
+        roadrunner.followTrajectorySequence(auto.sendLastCone(builder(pose), raisedTurretAngle));
+    }
+
+    private TrajectorySequenceBuilder builder(Pose2d pose) {
+        return roadrunner.trajectorySequenceBuilder(pose)
+                .addIterative("update", outtake::update)
+                .addIterative("controls", this::autoStackControls);
     }
 }
