@@ -187,6 +187,10 @@ public class Roadrunner extends MecanumDrive {
         return trajectorySequenceRunner.isBusy();
     }
 
+    public boolean isPositionMaintainerBusy() {
+        return trajectorySequenceRunner.isPositionMaintainerBusy();
+    }
+
     public void setPIDFCoefficients(DcMotor.RunMode runMode, PIDFCoefficients coefficients) {
         drivetrain.setPIDFCoefficients(runMode, coefficients);
     }

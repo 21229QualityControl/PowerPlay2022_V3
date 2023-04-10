@@ -38,12 +38,18 @@ public class PositionMaintainer {
         headingController.reset();
     }
 
+    public boolean isBusy() {
+        return Math.abs(lastError.getX()) > admissibleError.getX() &&
+                Math.abs(lastError.getY()) > admissibleError.getY() &&
+                Math.abs(Angle.normDelta(lastError.getHeading())) > admissibleError.getHeading();
+    }
+
     public DriveSignal update(Pose2d currentPose, Pose2d currentRobotVel) {
         Pose2d poseError = Kinematics.calculateRobotPoseError(targetPose, currentPose);
 
-        boolean admissible = Math.abs(poseError.getX()) < admissibleError.getX() &&
-                Math.abs(poseError.getY()) < admissibleError.getY() &&
-                Math.abs(Angle.normDelta(poseError.getHeading())) < admissibleError.getHeading();
+        boolean admissible = Math.abs(poseError.getX()) <= admissibleError.getX() &&
+                Math.abs(poseError.getY()) <= admissibleError.getY() &&
+                Math.abs(Angle.normDelta(poseError.getHeading())) <= admissibleError.getHeading();
 
         if (admissible) {
             resetController(); // reset so that integration won't jerk the controller

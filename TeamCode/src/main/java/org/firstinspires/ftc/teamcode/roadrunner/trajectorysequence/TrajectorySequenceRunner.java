@@ -393,4 +393,8 @@ public class TrajectorySequenceRunner {
     public boolean isBusy() {
         return currentTrajectorySequence != null;
     }
+
+    public boolean isPositionMaintainerBusy() {
+        return positionMaintainer.isBusy();
+    }
 }
