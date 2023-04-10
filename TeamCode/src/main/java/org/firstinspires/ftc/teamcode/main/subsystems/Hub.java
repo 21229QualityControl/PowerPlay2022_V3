@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.main.subsystems;
 
-import com.outoftheboxrobotics.photoncore.PhotonCore;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -22,7 +21,6 @@ public class Hub {
     private double zeroHeading = 0;
 
     public Hub(HardwareMap hardwareMap) {
-        PhotonCore.enable();
 //        LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap); // ensure v1.8.2 hub firmware
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
