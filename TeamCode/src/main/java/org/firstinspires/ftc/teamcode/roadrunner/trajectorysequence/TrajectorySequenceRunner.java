@@ -94,7 +94,7 @@ public class TrajectorySequenceRunner {
         currentSegmentIndex = 0;
         lastSegmentIndex = -1;
         ActiveIterativeAsyncManager.clear();
-        ActiveLinearAsyncManager.clear();
+        ActiveLinearAsyncManager.terminateAll();
     }
 
     public @Nullable DriveSignal update(Pose2d poseEstimate, Pose2d poseVelocity) {
@@ -287,24 +287,34 @@ public class TrajectorySequenceRunner {
     }
 
     public void stop() {
-        currentTrajectorySequence = null;
+        // terminate sync segment
+        if (currentTrajectorySequence != null && currentTrajectorySequence.size() < currentSegmentIndex) {
+            SequenceSegment currentSegment = currentTrajectorySequence.get(currentSegmentIndex);
+            if (currentSegment instanceof LinearSyncSegment) ((LinearSyncSegment) currentSegment).terminate();
+        }
+
+        // Run final markers
         for (TrajectoryMarker marker : remainingMarkers) {
             marker.getCallback().onMarkerReached();
         }
 
+        // Clear everything
         remainingMarkers.clear();
         ActiveIterativeAsyncManager.clear();
-        ActiveLinearAsyncManager.clear();
-
+        ActiveLinearAsyncManager.terminateAll();
         currentTrajectorySequence = null;
     }
     public void forceStop() {
-        currentTrajectorySequence = null;
+        // terminate sync segment
+        if (currentTrajectorySequence != null && currentTrajectorySequence.size() < currentSegmentIndex) {
+            SequenceSegment currentSegment = currentTrajectorySequence.get(currentSegmentIndex);
+            if (currentSegment instanceof LinearSyncSegment) ((LinearSyncSegment) currentSegment).terminate();
+        }
 
+        // Clear and terminate everything
         remainingMarkers.clear();
         ActiveIterativeAsyncManager.clear();
-        ActiveLinearAsyncManager.clear();
-
+        ActiveLinearAsyncManager.terminateAll();
         currentTrajectorySequence = null;
     }
 

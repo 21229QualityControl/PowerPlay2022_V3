@@ -8,7 +8,8 @@ import java.util.concurrent.Executors;
 public class ActiveLinearAsyncManager {
     private static ArrayList<LinearAsync> activeLinearAsyncs = new ArrayList<>();
 
-    public static void clear() {
+    public static void terminateAll() {
+        for (LinearAsync async : activeLinearAsyncs) async.terminate();
         activeLinearAsyncs.clear();
     }
 
@@ -52,6 +53,10 @@ public class ActiveLinearAsyncManager {
             executor = Executors.newSingleThreadExecutor();
             executor.submit(linearAsyncFunction);
             executor.shutdown();
+        }
+
+        private void terminate() {
+            executor.shutdownNow();
         }
 
         private String getName() {

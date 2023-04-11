@@ -29,6 +29,10 @@ public class LinearSyncSegment extends StationarySegment {
         executor.shutdown();
     }
 
+    public void terminate() {
+        executor.shutdownNow();
+    }
+
     public boolean isFinished() {
         if (executor == null) return false;
 
