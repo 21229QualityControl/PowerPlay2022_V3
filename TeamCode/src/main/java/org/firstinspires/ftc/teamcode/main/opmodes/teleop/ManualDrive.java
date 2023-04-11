@@ -68,8 +68,8 @@ import java.util.List;
 public class ManualDrive extends LinearOpMode {
     public static double SLOW_SPEED = 0.4;
     public static double SLOW_TURN = 0.2;
-    public static double SPEED_CONSTANT = 0.8;
-    public static double TURN_CONSTANT = 0.9;
+    public static double SPEED_CONSTANT = 0.9;
+    public static double TURN_CONSTANT = 0.75;
     public static double AUTO_TRANSFER_COOLDOWN = 200; // ms
 
     private Drivetrain drivetrain;
@@ -409,7 +409,7 @@ public class ManualDrive extends LinearOpMode {
         // Turret adjustment (Triggers)
         double triggers = g2.left_trigger - g2.right_trigger;
         if (Math.abs(triggers) > 0.01) {
-            raisedTurretAngle = raisedTurretAngle + triggers*2;
+            raisedTurretAngle = raisedTurretAngle + triggers*4;
             if (outtake.getSlideTarget() > 50) outtake.setTurretAngle(raisedTurretAngle); // update turret
         }
 
@@ -422,7 +422,7 @@ public class ManualDrive extends LinearOpMode {
             outtake.turretCenter(); // center turret when too low
         } else { // if stick is engaged and not forcing down, apply manual power
             outtake.disableOuttakePID();
-            outtake.setOuttakeOverridePower(Math.pow(slideStick, 3) * 0.5);
+            outtake.setOuttakeOverridePower(Math.pow(slideStick, 3) * 0.75);
             raisedTurretAngle = outtake.getTurretAngle();
             if (outtake.getSlidePosition() < 80) { // center turret if too low
                 outtake.turretCenter();
