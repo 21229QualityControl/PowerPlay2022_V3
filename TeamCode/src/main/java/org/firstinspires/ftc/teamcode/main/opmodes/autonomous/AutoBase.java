@@ -49,7 +49,7 @@ public abstract class AutoBase extends LinearOpMode {
     public static int SIGNAL = -1; // Field Setup scenario
 
     // config switches
-    public static boolean SIGNAL_OVERRIDE = true; // TODO: Switch back to false
+    public static boolean SIGNAL_OVERRIDE = false;
 
     // default values
     private final int defaultSignal = 18; // middle
@@ -74,7 +74,7 @@ public abstract class AutoBase extends LinearOpMode {
         this.outtake = new Outtake(hardwareMap);
         this.auto = new Cycler(this.rr, this.intake, this.outtake);
         Memory.REMEMBERED_OUTTAKE = this.outtake;
-//        this.vision = new Vision(hardwareMap);  // TODO: Uncomment when camera is installed
+        this.vision = new Vision(hardwareMap);
         this.led = new LED(hardwareMap);
 
         this.parker = new PositionMaintainer(new PIDCoefficients(3, 0, 0), new PIDCoefficients(3, 0, 0), HEADING_PID, new Pose2d(0.3, 0.3, Math.toRadians(1)));
@@ -104,7 +104,7 @@ public abstract class AutoBase extends LinearOpMode {
             }
 
             // use vision for signal
-//            vision.updatePolling(); // TODO: Uncomment when camera is installed
+            vision.updatePolling();
             if (!SIGNAL_OVERRIDE) SIGNAL = vision.getReading();
 
             // add telemetry info sheet
@@ -130,13 +130,13 @@ public abstract class AutoBase extends LinearOpMode {
         resetRuntime(); // reset runtime timer
         Memory.saveStringToFile(String.valueOf(System.currentTimeMillis()), Memory.SAVED_TIME_FILE_NAME); // save auto time for persistence
 
-//        vision.stopStreaming(); // Takes 0.135 seconds  // TODO: Uncomment when camera is installed
+        vision.stopStreaming(); // Takes 0.135 seconds
 
         if (isStopRequested()) return; // exit if stopped
 
         // use last detection or default signal if last cycle failed
         if (SIGNAL == -1) {
-//            SIGNAL = vision.getLastValidReading();  // TODO: Uncomment when camera is installed
+            SIGNAL = vision.getLastValidReading();
             if (SIGNAL == -1) SIGNAL = defaultSignal;
         }
 
@@ -195,12 +195,12 @@ public abstract class AutoBase extends LinearOpMode {
     }
 
     private void printStartupStatus() {
-//        String camStatus;  // TODO: Uncomment when camera is installed
-//        if (SIGNAL_OVERRIDE) camStatus = "OVERRIDE " + SIGNAL;
-//        else if (!vision.pipeline.isInitialized()) camStatus = "INITIALIZING";
-//        else if (vision.getReading() == -1 && vision.getLastValidReading() != -1) camStatus = "LOST [ " + vision.getLastValidReading() + " ] for " + vision.getFramesWithoutDetection() + " frames";
-//        else if (vision.getLastValidReading() == -1) camStatus = "FAILED TO READ";
-//        else camStatus = "FOUND [ " + vision.getReading() + " ]";
+        String camStatus;
+        if (SIGNAL_OVERRIDE) camStatus = "OVERRIDE " + SIGNAL;
+        else if (!vision.pipeline.isInitialized()) camStatus = "INITIALIZING";
+        else if (vision.getReading() == -1 && vision.getLastValidReading() != -1) camStatus = "LOST [ " + vision.getLastValidReading() + " ] for " + vision.getFramesWithoutDetection() + " frames";
+        else if (vision.getLastValidReading() == -1) camStatus = "FAILED TO READ";
+        else camStatus = "FOUND [ " + vision.getReading() + " ]";
 
 //        String outtakeStatus;
 //        if (Math.max(outtake.getTurretPosition()) < )
@@ -214,8 +214,8 @@ public abstract class AutoBase extends LinearOpMode {
 //            sensorStatus = "READY";
 //        }
 
-//        telemetry.addData("Vision", camStatus);  // TODO: Uncomment when camera is installed
-//        telemetry.addData("    Debug", vision.getDebugData());  // TODO: Uncomment when camera is installed
+        telemetry.addData("Vision", camStatus);
+        telemetry.addData("    Debug", vision.getDebugData());
 //        telemetry.addData("Outtake motors", )
         telemetry.addData("Turret Angle", outtake.getTurretAngle() + " -> " + outtake.getTurretTarget());
         telemetry.addData("Extender Pos", outtake.getSlidePosition() + " -> " + outtake.getSlideTarget());
