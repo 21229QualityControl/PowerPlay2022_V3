@@ -33,25 +33,25 @@ public class Outtake {
     public static int SLIDE_STORED = 0;
 
     private static double ARM_MIN = 0;
-    private static double ARM_MAX = 0.85;
-    public static double ARM_FLAT_OUT = 0.11;
-    public static double ARM_TILT_OUT = 0.17;
-    public static double ARM_VERTICAL = 0.38; // might be unnecessary
-    public static double ARM_TRANSFER = 0.77;
-    public static double ARM_TRANSFER_COMPLETE = 0.74; // TODO: Tune
+    private static double ARM_MAX = 0.81;
+    public static double ARM_FLAT_OUT = 0.06;
+    public static double ARM_TILT_OUT = 0.09;
+    public static double ARM_VERTICAL = 0.33; // might be unnecessary
+    public static double ARM_TRANSFER = 0.72;
+    public static double ARM_TRANSFER_AUTO_POS = 0.72;
 
-    private static double LATCH_MIN = 0.35; // TODO: Tune
-    private static double LATCH_MAX = 0.85; // TODO: Tune
-    public static double LATCH_OPEN = 0.37;
+    private static double LATCH_MIN = 0.28; // Guess (not that it matters)
+    private static double LATCH_MAX = 0.85; // Guess
+    public static double LATCH_OPEN = 0.30;
     public static double LATCH_BARELY = 0.74; // Just covers the bottom, does not apply pressure
     public static double LATCH_ENGAGED = 0.84; // may disable the servo temporarily
 
-    private static double GUIDE_MIN = 0;
-    private static double GUIDE_MAX = 0;
-    public static double GUIDE_FLAT_OUT = 0.4;
-    public static double GUIDE_RETRACT_DOWN = 0.75;
-    public static double GUIDE_STORE_UP = 0.75; // 0.05 actually up
-    public static double GUIDE_INIT = 0.75;
+    private static double GUIDE_MIN = 0.17;
+    private static double GUIDE_MAX = 0.86;
+    public static double GUIDE_FLAT_OUT = 0.5;
+    public static double GUIDE_RETRACT_DOWN = 0.83;
+    public static double GUIDE_STORE_UP = 0.83; // 0.17 actually up
+    public static double GUIDE_INIT = 0.83;
 
     private DualMotorWithPID slide;
     private AngleMotorWithPID turret;
@@ -112,8 +112,8 @@ public class Outtake {
     public void armTransfer() {
         this.arm.setPosition(ARM_TRANSFER);
     }
-    public void armTransferComplete() {
-        this.arm.setPosition(ARM_TRANSFER_COMPLETE);
+    public void armTransferAuto() {
+        this.arm.setPosition(ARM_TRANSFER_AUTO_POS);
     }
     public double getArmPosition() {
         return this.arm.getPosition();

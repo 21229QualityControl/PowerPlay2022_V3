@@ -23,17 +23,18 @@ public class Intake {
     private static int EXTENDER_MIN = 0;
     private static int EXTENDER_MAX = 1050; // 1080 is technically the max
     public static int EXTENDER_STORED_POS = 0;
-    public static int EXTENDER_CYCLE_POS = 560; // 560 for auto
     public static int EXTENDER_CYCLE_TELEOP_POS = 510;
+    public static int EXTENDER_CYCLE_POS = 580; // 580 for auto
     public static int EXTENDER_BEFORE_STACK_POS = 460;
+    public static int EXTENDER_TRANSFER_AUTO_POS = 60;
 
-    private static double ARM_MIN = 0;
-    private static double ARM_MAX = 0.87;
-    public static double ARM_STORED_POS = 0.30; // Arm is placed vertical
-    public static double ARM_INTAKING_POS = 0.595; // Claw leveled
-    public static double ARM_TRANSFER_POS = 0.25;
-    public static double ARM_TRANSFER_COMPLETE_POS = 0.33;
-    public static double ARM_ANGLED_DEPOSIT_POS = 0.5; // Claw tilted for front deposit
+    private static double ARM_MIN = 0.137;
+    private static double ARM_MAX = 0.585;
+    public static double ARM_STORED_POS = 0.240; // Arm as vertical as possible (without blocking outtake)
+    public static double ARM_INTAKING_POS = 0.554; // Claw leveled
+    public static double ARM_TRANSFER_POS = 0.22;
+    public static double ARM_TRANSFER_AUTO_POS = 0.20;
+    public static double ARM_ANGLED_DEPOSIT_POS = 0.42; // Claw tilted for front deposit on low junction
 
     private static double CLAW_MIN = 0.14;
     private static double CLAW_MAX = 0.67;
@@ -42,10 +43,11 @@ public class Intake {
     public static double CLAW_RELEASE_POS = 0.48; // open quite wide but can still fit through intake
     public static double CLAW_WIDE_POS = 0.67;
 
-    private static double VSLIDE_MIN = 0.30;
+    private static double VSLIDE_MIN = 0.27;
     private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
     public static double VSLIDE_TRANSFER_POS = 0.4;
-    public static double VSLIDE_LVL1_POS = 0.3;
+    public static double VSLIDE_TRANSFER_AUTO_POS = 0.42;
+    public static double VSLIDE_LVL1_POS = 0.27;
     public static double VSLIDE_LVL2_POS = 0.36;
     public static double VSLIDE_LVL3_POS = 0.42;
     public static double VSLIDE_LVL4_POS = 0.47;
@@ -90,6 +92,9 @@ public class Intake {
     public void extendCycleTeleop() {
         this.extender.setTargetPosition(EXTENDER_CYCLE_TELEOP_POS);
     }
+    public void extendTransferAuto() {
+        this.extender.setTargetPosition(EXTENDER_TRANSFER_AUTO_POS);
+    }
     public int getExtenderTarget() {
         return this.extender.getTargetPosition();
     }
@@ -122,8 +127,8 @@ public class Intake {
     public void armTransfer() {
         this.arm.setPosition(ARM_TRANSFER_POS);
     }
-    public void armTransferComplete() {
-        this.arm.setPosition(ARM_TRANSFER_COMPLETE_POS);
+    public void armTransferAuto() {
+        this.arm.setPosition(ARM_TRANSFER_AUTO_POS);
     }
     public void armAngledDeposit() {
         this.arm.setPosition(ARM_ANGLED_DEPOSIT_POS);
@@ -164,6 +169,9 @@ public class Intake {
     }
     public void vslideTransfer() {
         this.vslide.setPosition(VSLIDE_TRANSFER_POS);
+    }
+    public void vslideTransferAuto() {
+        this.vslide.setPosition(VSLIDE_TRANSFER_AUTO_POS);
     }
     public void vslideLevel(int level) {
         switch (level) {
