@@ -20,6 +20,14 @@ public abstract class StationarySegment extends SequenceSegment{
         return keepPosition;
     }
 
+
+    /**
+     * ONLY TO BE USED WHILE BUILDING
+     */
+    public void overrideMarkers(List<TrajectoryMarker> markers) {
+        this.markers = markers;
+    }
+
     @Override
     public Pose2d getPose(double time) {
         return getStartPose();

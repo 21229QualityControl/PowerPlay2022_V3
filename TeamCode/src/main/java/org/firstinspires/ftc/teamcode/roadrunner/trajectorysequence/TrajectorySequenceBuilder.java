@@ -26,6 +26,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegm
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.LinearAsyncMarker;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.LinearSyncSegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.SequenceSegment;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.StationarySegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.TrajectorySegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.TurnSegment;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.WaitForAsyncSegment;
@@ -785,15 +786,7 @@ public class TrajectorySequenceBuilder {
 
             SequenceSegment newSegment = null;
 
-            if (segment instanceof WaitSegment) {
-                List<TrajectoryMarker> newMarkers = new ArrayList<>(segment.getMarkers());
-
-                newMarkers.addAll(sequenceSegments.get(segmentIndex).getMarkers());
-                newMarkers.add(new TrajectoryMarker(segmentOffsetTime, marker.getCallback()));
-
-                WaitSegment thisSegment = (WaitSegment) segment;
-                newSegment = new WaitSegment(thisSegment.getStartPose(), thisSegment.getDuration(), thisSegment.isKeepingPosition(), newMarkers);
-            } else if (segment instanceof TurnSegment) {
+            if (segment instanceof TurnSegment) {
                 List<TrajectoryMarker> newMarkers = new ArrayList<>(segment.getMarkers());
 
                 newMarkers.addAll(sequenceSegments.get(segmentIndex).getMarkers());
@@ -808,6 +801,18 @@ public class TrajectorySequenceBuilder {
                 newMarkers.add(new TrajectoryMarker(segmentOffsetTime, marker.getCallback()));
 
                 newSegment = new TrajectorySegment(new Trajectory(thisSegment.getTrajectory().getPath(), thisSegment.getTrajectory().getProfile(), newMarkers));
+            } else if (segment instanceof StationarySegment) {
+                List<TrajectoryMarker> newMarkers = new ArrayList<>(segment.getMarkers());
+
+                newMarkers.addAll(sequenceSegments.get(segmentIndex).getMarkers());
+                newMarkers.add(new TrajectoryMarker(segmentOffsetTime, marker.getCallback()));
+
+                // instead of generating a new segment like the rest, just override markers on existing
+                StationarySegment thisSegment = (StationarySegment) segment;
+                thisSegment.overrideMarkers(newMarkers);
+                newSegment = thisSegment;
+            } else {
+                throw new RuntimeException("Unable to project marker to unknown local segment");
             }
 
             sequenceSegments.set(segmentIndex, newSegment);

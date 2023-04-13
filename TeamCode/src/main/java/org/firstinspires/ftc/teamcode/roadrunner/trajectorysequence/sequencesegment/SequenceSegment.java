@@ -10,7 +10,7 @@ public abstract class SequenceSegment {
     private final double duration; // seconds
     private final Pose2d startPose;
     private final Pose2d endPose;
-    private final List<TrajectoryMarker> markers;
+    protected List<TrajectoryMarker> markers;
 
     protected SequenceSegment(
             String name,
