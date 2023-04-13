@@ -33,12 +33,12 @@ public class Intake {
     public static double ARM_TRANSFER_COMPLETE_POS = 0.33;
     public static double ARM_ANGLED_DEPOSIT_POS = 0.5; // Claw tilted for front deposit
 
-    private static double CLAW_MIN = 0;
-    private static double CLAW_MAX = 0.2;
-    public static double CLAW_CLOSED_POS = 0.17; // closed completely
-    public static double CLAW_GRAB_POS = 0.18;
-    public static double CLAW_RELEASE_POS = 0.1;
-    public static double CLAW_WIDE_POS = 0; // TODO: not wide enough
+    private static double CLAW_MIN = 0.14;
+    private static double CLAW_MAX = 0.67;
+    public static double CLAW_CLOSED_POS = 0.14; // closed completely
+    public static double CLAW_GRAB_POS = 0.14;
+    public static double CLAW_RELEASE_POS = 0.48; // open quite wide but can still fit through intake
+    public static double CLAW_WIDE_POS = 0.67;
 
     private static double VSLIDE_MIN = 0.30;
     private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
@@ -67,7 +67,7 @@ public class Intake {
     public void initialize() {
         extendStore();
         armStore();
-        clawClosed();
+        clawRelease();
         vslideDown();
     }
 
@@ -234,14 +234,14 @@ public class Intake {
      * @return is the claw open wide for grabbing
      */
     public boolean isClawOpen() {
-        return claw.getPosition() < CLAW_WIDE_POS + 0.01;
+        return claw.getPosition() > CLAW_WIDE_POS - 0.01;
     }
 
     /**
      * @return is the claw closed for grabbing
      */
     public boolean isClawClosed() {
-        return claw.getPosition() > CLAW_GRAB_POS - 0.01;
+        return claw.getPosition() < CLAW_GRAB_POS + 0.01;
     }
 
     /**

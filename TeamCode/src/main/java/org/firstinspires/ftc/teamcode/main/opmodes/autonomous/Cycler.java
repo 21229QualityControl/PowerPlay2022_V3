@@ -27,7 +27,7 @@ public class Cycler {
                     intake.extenderTo(Intake.EXTENDER_BEFORE_STACK_POS);
                     intake.vslideLevel(stackLayer);
                     intake.armIntake();
-                    intake.clawRelease(); // don't open fully yet
+                    intake.clawRelease(); // to go through gap
 
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;
@@ -37,12 +37,12 @@ public class Cycler {
                     outtake.guideFlatOut();
                     outtake.raiseHigh();
                     outtake.setTurretAngle(turretAngle);
-                    intake.clawWide(); // open claw wide now
 
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
                     outtake.latchBarely();
+                    intake.clawWide(); // now through gap, open claw wide
 
                     waitSeconds(0.4);
                     if (Thread.interrupted()) return;
@@ -92,7 +92,7 @@ public class Cycler {
                     if (Thread.interrupted()) return;
 
                     // drop cone onto holder
-                    intake.clawWide();
+                    intake.clawRelease();
 
                     waitSeconds(0.2);
                     if (Thread.interrupted()) return;
@@ -111,7 +111,7 @@ public class Cycler {
                 .setKeepPosition(true)
                 .executeSync(() -> { // move intake out of the way
                     intake.armStore();
-                    intake.clawClosed();
+                    intake.clawRelease(); // to go through gap
 
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;
@@ -121,7 +121,6 @@ public class Cycler {
                     outtake.guideFlatOut();
                     outtake.raiseHigh();
                     outtake.setTurretAngle(turretAngle);
-                    intake.clawWide(); // open claw wide now
 
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;

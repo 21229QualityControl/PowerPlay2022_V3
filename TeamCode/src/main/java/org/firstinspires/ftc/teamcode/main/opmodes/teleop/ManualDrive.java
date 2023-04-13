@@ -268,7 +268,7 @@ public class ManualDrive extends LinearOpMode {
             intake.clawGrab();
         }
         if (g1.bOnce()) { // release
-            if (intake.isArmFlat() || (intake.isArmOut() && !intake.isClawClosed()) || (intake.isArmBlockingOuttake())) intake.clawWide();
+            if (intake.isArmFlat() || (intake.isArmOut() && !intake.isClawClosed())) intake.clawWide();
             else intake.clawRelease();
         }
 
@@ -301,7 +301,7 @@ public class ManualDrive extends LinearOpMode {
                 sleep(250);
                 intake.armTransfer();
                 sleep(500);
-                intake.clawWide();
+                intake.clawRelease();
                 sleep(300);
                 intake.vslideDown();
                 intake.armStore();
@@ -319,7 +319,8 @@ public class ManualDrive extends LinearOpMode {
                 if (extendIntake) intake.extendCycleTeleop();
                 intake.armIntake();
                 intake.vslideLevel(1);
-                intake.clawWide();
+                intake.clawRelease();
+                delayClawWide();
 //                autoTransferTimer.reset();
             }
         }
@@ -350,7 +351,8 @@ public class ManualDrive extends LinearOpMode {
             stacknum = Range.clip(stacknum, 1, 5);
 
             if (extendIntake) { // will prepare for auto-cycle only when extending out
-                intake.clawWide();
+                intake.clawRelease();
+                delayClawWide();
                 intake.extendCycleTeleop();
                 intake.armIntake();
             }
@@ -452,6 +454,15 @@ public class ManualDrive extends LinearOpMode {
         if (Math.abs(armStick) > 0.01) {
             outtake.setArmPosition(outtake.getArmPosition() + armStick * -0.015);
         }
+    }
+
+    private void delayClawWide() {
+        new Thread(() -> { // TODO: Better wait solution
+            sleep(100);
+            if (intake.isArmOut() && !intake.isClawClosed()) { // requires that the intake is out and already open
+                intake.clawWide();
+            }
+        }).start();
     }
 
     private double timeLeft() {
