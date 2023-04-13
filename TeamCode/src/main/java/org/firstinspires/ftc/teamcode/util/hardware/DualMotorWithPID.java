@@ -71,9 +71,9 @@ public class DualMotorWithPID {
     /**
      * Sets the desired encoder target position to which the motor should advance or retreat
      * and then actively hold there at. This behavior is similar to the operation of a servo.
-     * The maximum speed at which this advance or retreat occurs is governed by the power level
+     * The maximum speed at which this advance or retreat occurs is governed by the max power
      * currently set on the motor. While the motor is advancing or retreating to the desired
-     * taget position, {@link #isBusy()} will return true.
+     * target position, {@link #isBusy()} will return true.
      *
      * @param position the desired encoder target position
      */
