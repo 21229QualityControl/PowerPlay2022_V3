@@ -57,10 +57,10 @@ public class AutoRedRight_Shared_1_Plus_5_Park extends AutoBase {
         Log.d("Autonomous", String.format("moveToJunction() Start %.3f", getRuntime()));
         follow(builder()
                 .lineTo(new Vector2d(getStartPose().getX(), CYCLE_POSITION.getY()))
-                .build());
-        follow(builder(CYCLE_POSITION.asPose2d())
+                .turnTo(CYCLE_POSITION.getHeading())
                 .setKeepPosition(true)
-                .waitForCondition(() -> rr.getTrajectorySequenceRunner().isPositionMaintainerBusy(), 500)
+                .waitSeconds(0.1)
+                .waitForCondition(() -> !rr.isPositionMaintainerBusy(), 3000)
                 .build());
 
         Log.d("Autonomous", String.format("moveToJunction() Ended %.3f", getRuntime()));

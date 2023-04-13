@@ -50,9 +50,9 @@ public class Roadrunner extends MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(10, 0, 2); // D here acts as a P for pose velocity
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0);
 
-    public static PIDCoefficients KEEP_POSITION_TRANSLATIONAL_PID = new PIDCoefficients(5, 0.5, 0);
-    public static PIDCoefficients KEEP_POSITION_HEADING_PID = new PIDCoefficients(5, 0.5, 0);
-    public static CPose2d KEEP_POSITION_TOLERANCE = new CPose2d(0.12, 0.1, Math.toRadians(1.0));
+    public static PIDCoefficients KEEP_POSITION_TRANSLATIONAL_PID = new PIDCoefficients(10, 0.5, 0);
+    public static PIDCoefficients KEEP_POSITION_HEADING_PID = new PIDCoefficients(11, 0.5, 0);
+    public static CPose2d KEEP_POSITION_TOLERANCE = new CPose2d(0.5, 0.5, Math.toRadians(2.0));
 
     public static double LATERAL_MULTIPLIER = 1.72; // reality/expected for strafing effort
 

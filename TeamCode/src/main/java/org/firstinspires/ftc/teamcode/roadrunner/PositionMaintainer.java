@@ -3,6 +3,8 @@
  */
 package org.firstinspires.ftc.teamcode.roadrunner;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
@@ -39,9 +41,11 @@ public class PositionMaintainer {
     }
 
     public boolean isBusy() {
-        return Math.abs(lastError.getX()) > admissibleError.getX() &&
-                Math.abs(lastError.getY()) > admissibleError.getY() &&
+        boolean busy = Math.abs(lastError.getX()) > admissibleError.getX() ||
+                Math.abs(lastError.getY()) > admissibleError.getY() ||
                 Math.abs(Angle.normDelta(lastError.getHeading())) > admissibleError.getHeading();
+//        Log.d("PositionMaintainer", "Busy: " + busy + ", Last error: " + lastError.toString());
+        return busy;
     }
 
     public DriveSignal update(Pose2d currentPose, Pose2d currentRobotVel) {
@@ -73,6 +77,7 @@ public class PositionMaintainer {
 
             lastError = poseError;
 
+//            Log.d("PositionMaintainer", "Corrected velocity: " + correctedVelocity.toString());
             return new DriveSignal(correctedVelocity, zero);
         }
     }
