@@ -18,4 +18,12 @@ public class RobotConstants {
             new Vector2d(-rearWall, -rightWall), // Right Rear
             new Vector2d(frontWall, -rightWall) // Right Front
     );
+    public static List<Vector2d> intakePoints = Arrays.asList(
+            new Vector2d(frontWall, leftWall * 2/3),
+            new Vector2d(frontWall, -rightWall * 2/3)
+    );
+
+    public static Vector2d turretCenter = new Vector2d(-2, 0);
+    public static Vector2d extenderEnd = new Vector2d(-3, 0);
+    public static Vector2d outtakeExtended = new Vector2d(-12.8, 0);
 }

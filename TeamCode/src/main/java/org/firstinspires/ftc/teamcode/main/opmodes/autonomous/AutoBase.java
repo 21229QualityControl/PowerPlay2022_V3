@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.PositionMaintainer;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.StateCopyLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
-import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
+import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 public abstract class AutoBase extends LinearOpMode {
     // subsystems
@@ -78,6 +78,23 @@ public abstract class AutoBase extends LinearOpMode {
         this.led = new LED(hardwareMap);
 
         this.parker = new PositionMaintainer(new PIDCoefficients(3, 0, 0), new PIDCoefficients(3, 0, 0), HEADING_PID, new Pose2d(0.3, 0.3, Math.toRadians(1)));
+
+        // draw intake
+        this.rr.getTrajectorySequenceRunner().dashboardConsumers.add((canvas) -> {
+            canvas.setStroke("#4CAF50");
+            DashboardUtil.drawIntake(canvas, rr.getPoseEstimate(), intake.extenderTicksToInches(intake.getExtenderTarget()));
+
+            canvas.setStroke("#3F51B5");
+            DashboardUtil.drawIntake(canvas, rr.getPoseEstimate(), intake.extenderTicksToInches(intake.getExtenderPosition()));
+        });
+        // draw outtake
+        this.rr.getTrajectorySequenceRunner().dashboardConsumers.add((canvas) -> {
+            canvas.setStroke("#4CAF50");
+            DashboardUtil.drawOuttake(canvas, rr.getPoseEstimate(), Math.toRadians(outtake.getTurretTarget()), outtake.slideTicksToInches(outtake.getSlideTarget()) * Math.cos(Math.toRadians(Outtake.SLIDE_ANGLE)), outtake.isArmOut());
+
+            canvas.setStroke("#3F51B5");
+            DashboardUtil.drawOuttake(canvas, rr.getPoseEstimate(), Math.toRadians(outtake.getTurretAngle()), outtake.slideTicksToInches(outtake.getSlidePosition()) * Math.cos(Math.toRadians(Outtake.SLIDE_ANGLE)), outtake.isArmOut());
+        });
 
         // setup gamepad controls
         g1 = new GamePadController(gamepad1);

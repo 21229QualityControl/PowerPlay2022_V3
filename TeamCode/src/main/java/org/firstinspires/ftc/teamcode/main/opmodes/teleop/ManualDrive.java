@@ -27,6 +27,7 @@ import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
 import org.firstinspires.ftc.teamcode.main.subsystems.SmartGameTimer;
 import org.firstinspires.ftc.teamcode.roadrunner.PositionMaintainer;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
+import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 
 import java.util.List;
 
@@ -135,6 +136,23 @@ public class ManualDrive extends LinearOpMode {
         outtake.setTurretAngle(0);
 
         autoTransferTimer = new ElapsedTime();
+
+        // draw intake
+        this.roadrunner.getTrajectorySequenceRunner().dashboardConsumers.add((canvas) -> {
+            canvas.setStroke("#4CAF50");
+            DashboardUtil.drawIntake(canvas, roadrunner.getPoseEstimate(), intake.extenderTicksToInches(intake.getExtenderTarget()));
+
+            canvas.setStroke("#3F51B5");
+            DashboardUtil.drawIntake(canvas, roadrunner.getPoseEstimate(), intake.extenderTicksToInches(intake.getExtenderPosition()));
+        });
+        // draw outtake
+        this.roadrunner.getTrajectorySequenceRunner().dashboardConsumers.add((canvas) -> {
+            canvas.setStroke("#4CAF50");
+            DashboardUtil.drawOuttake(canvas, roadrunner.getPoseEstimate(), Math.toRadians(outtake.getTurretTarget()), outtake.slideTicksToInches(outtake.getSlideTarget()) * Math.cos(Math.toRadians(Outtake.SLIDE_ANGLE)), outtake.isArmOut());
+
+            canvas.setStroke("#3F51B5");
+            DashboardUtil.drawOuttake(canvas, roadrunner.getPoseEstimate(), Math.toRadians(outtake.getTurretAngle()), outtake.slideTicksToInches(outtake.getSlidePosition()) * Math.cos(Math.toRadians(Outtake.SLIDE_ANGLE)), outtake.isArmOut());
+        });
 
         // Wait for start
         while (opModeInInit()) {

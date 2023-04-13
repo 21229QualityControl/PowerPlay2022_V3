@@ -66,10 +66,37 @@ public class DashboardUtil {
         canvas.fillCircle(pose.getX(), pose.getY(), 1);
     }
 
+    public static void drawIntake(Canvas canvas, Pose2d pose, double intakeExtension) {
+        double[][] points = transformPolygon(RobotConstants.intakePoints, new Vector2d(intakeExtension, 0), pose);
+        canvas.strokePolyline(points[0], points[1]);
+    }
+
+    public static void drawOuttake(Canvas canvas, Pose2d pose, double turretAngle, double outtakeExtension, boolean armFlipped) {
+        Vector2d turretCenter = transformVector(RobotConstants.turretCenter, pose);
+        Vector2d extenderEnd;
+        if (armFlipped) extenderEnd = transformVector(RobotConstants.outtakeExtended.plus(new Vector2d(-outtakeExtension, 0)).rotated(turretAngle), pose);
+        else extenderEnd = transformVector(RobotConstants.extenderEnd.plus(new Vector2d(-outtakeExtension, 0)).rotated(turretAngle), pose);
+        canvas.strokeLine(turretCenter.getX(), turretCenter.getY(), extenderEnd.getX(), extenderEnd.getY());
+    }
+
+    private static Vector2d transformVector(Vector2d vector, Pose2d transformation) {
+        return vector.rotated(transformation.getHeading()).plus(transformation.vec());
+    }
+
     private static double[][] transformPolygon(List<Vector2d> polygon, Pose2d transformation) {
         double[][] numeralPoints = new double[2][polygon.size()];
         for (int i = 0; i < polygon.size(); i++) {
             Vector2d point = polygon.get(i).rotated(transformation.getHeading()).plus(transformation.vec());
+            numeralPoints[0][i] = point.getX();
+            numeralPoints[1][i] = point.getY();
+        }
+        return numeralPoints;
+    }
+
+    private static double[][] transformPolygon(List<Vector2d> polygon, Vector2d offset, Pose2d transformation) {
+        double[][] numeralPoints = new double[2][polygon.size()];
+        for (int i = 0; i < polygon.size(); i++) {
+            Vector2d point = polygon.get(i).plus(offset).rotated(transformation.getHeading()).plus(transformation.vec());
             numeralPoints[0][i] = point.getX();
             numeralPoints[1][i] = point.getY();
         }
