@@ -22,6 +22,8 @@ public class Outtake {
     public static int TURRET_LEFT = 52;
     public static int TURRET_RIGHT = -52;
 
+    public static final double SLIDE_TICKS_PER_REV = ((1+(46.0/11.0)) * 28);
+    public static final double SLIDE_ANGLE = 63;
     public static PIDCoefficients SLIDE_PID = new PIDCoefficients(0.010, 0, 0.0004);
     private static int SLIDE_MIN = 0;
     private static int SLIDE_MAX = 900;
@@ -182,6 +184,9 @@ public class Outtake {
     public DualMotorWithPID getSlide() {
         return this.slide;
     }
+    public double slideTicksToInches(int ticks) {
+        return ticks / SLIDE_TICKS_PER_REV;
+    }
 
     // Turret movements
     public void setTurretAngle(double angle) {
@@ -264,5 +269,9 @@ public class Outtake {
             slide.getMainMotor().setPower(power);
             slide.getSecondMotor().setPower(power);
         }
+    }
+
+    public boolean isArmOut() {
+        return arm.getPosition() < ARM_TILT_OUT + 0.1;
     }
 }

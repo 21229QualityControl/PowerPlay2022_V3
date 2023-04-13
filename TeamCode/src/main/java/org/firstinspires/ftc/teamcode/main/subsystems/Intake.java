@@ -17,6 +17,8 @@ public class Intake {
     private Servo claw;
     private Servo vslide;
 
+    public static final double EXTENDER_TICKS_PER_REV = ((1+(46.0/11.0)) * 28);
+    public static final double EXTENDER_SPOOL_CIRCUMFERENCE = 112 / 25.4; // 112mm
     public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.010, 0, 0.0001);
     private static int EXTENDER_MIN = 0;
     private static int EXTENDER_MAX = 1050; // 1080 is technically the max
@@ -102,6 +104,9 @@ public class Intake {
     }
     public MotorWithPID getExtender() {
         return this.extender;
+    }
+    public double extenderTicksToInches(int ticks) {
+        return ticks / EXTENDER_TICKS_PER_REV * EXTENDER_SPOOL_CIRCUMFERENCE;
     }
 
     // Intake Arm
