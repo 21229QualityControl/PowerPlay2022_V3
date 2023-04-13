@@ -89,7 +89,7 @@ public class ManualDrive extends LinearOpMode {
 
     private boolean isSlow = false;
     private boolean keepPosition = false;
-    private boolean extendIntake = true;
+    private boolean extendIntake = false;
     private boolean autoStack = false;
     private boolean autoTransfer = false;
     private int stacknum = 1; // 1-5
@@ -301,12 +301,11 @@ public class ManualDrive extends LinearOpMode {
             new Thread(() -> { // TODO: Better wait solution
                 sleep(250);
                 intake.armTransfer();
-                sleep(500);
+                sleep(400);
                 intake.clawRelease();
                 sleep(300);
                 intake.vslideDown();
                 intake.armStore();
-                intake.clawGrab();
             }).start();
         }
 
@@ -316,6 +315,7 @@ public class ManualDrive extends LinearOpMode {
                 intake.extendStore();
                 intake.armStore();
                 intake.vslideDown();
+                if (intake.isClawOpen()) intake.clawRelease();
             } else { // Go Intake
                 if (extendIntake) intake.extendCycleTeleop();
                 intake.armIntake();
@@ -370,8 +370,7 @@ public class ManualDrive extends LinearOpMode {
     private void outtakeControls() {
         // Outtake high (dpad up)
         if (g2.dpadUpOnce()) {
-            intake.armStore();
-            intake.vslideDown();
+            if (intake.isArmBlockingOuttake()) intake.armStore();
 
             outtake.setTurretAngle(raisedTurretAngle);
             outtake.raiseHigh();
@@ -379,19 +378,19 @@ public class ManualDrive extends LinearOpMode {
 
         // Outtake mid (dpad right)
         if (g2.dpadRightOnce()) {
-            intake.armStore();
-            intake.vslideDown();
+            if (intake.isArmBlockingOuttake()) intake.armStore();
 
+            raisedTurretAngle = 0;
             outtake.setTurretAngle(raisedTurretAngle);
             outtake.raiseMid();
         }
 
         // Outtake low (dpad down)
         if (g2.dpadDownOnce()) {
-            intake.armStore();
-            intake.vslideDown();
+            if (intake.isArmBlockingOuttake()) intake.armStore();
 
-            outtake.turretCenter();
+            raisedTurretAngle = 0;
+            outtake.setTurretAngle(raisedTurretAngle);
             outtake.scheduleLatch();
             outtake.armFlatOut();
             outtake.slideLow();
