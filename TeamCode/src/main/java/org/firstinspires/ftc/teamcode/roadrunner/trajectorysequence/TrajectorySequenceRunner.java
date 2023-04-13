@@ -71,8 +71,8 @@ public class TrajectorySequenceRunner {
 
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
 
-    public Consumer<Canvas> dashboardConsumer = null;
-    public Consumer<TelemetryPacket> packetConsumer = null;
+    public List<Consumer<Canvas>> dashboardConsumers = new ArrayList<>();
+    public List<Consumer<TelemetryPacket>> packetConsumers = new ArrayList<>();
 
     public TrajectorySequenceRunner(TrajectoryFollower follower, PositionMaintainer positionMaintainer, PIDCoefficients headingPIDCoefficients) {
         this.follower = follower;
@@ -248,39 +248,51 @@ public class TrajectorySequenceRunner {
             poseHistory.removeFirst();
         }
 
-        if (currentSegment != null) packet.put("mode", currentSegment.getName());
-        packet.put("x", poseEstimate.getX());
-        packet.put("y", poseEstimate.getY());
-        packet.put("ω", Math.toDegrees(poseEstimate.getHeading()));
+        // Bypass dashboard calls if disabled
+        if (!Dashboard.DISABLE_DASHBOARD) {
+
+            if (currentSegment != null) packet.put("mode", currentSegment.getName());
+            packet.put("x", poseEstimate.getX());
+            packet.put("y", poseEstimate.getY());
+            packet.put("ω", Math.toDegrees(poseEstimate.getHeading()));
 //        Log.d("Heading", String.format("%.2f -> %.2f, error: %.2f", Math.toDegrees(poseEstimate.getHeading()), targetPose!=null?Math.toDegrees(targetPose.getHeading()):0, Math.toDegrees(lastPoseError.getHeading())));
 
-        packet.put("xTarget", poseEstimate.getX() + getLastPoseError().getX());
-        packet.put("yTarget", poseEstimate.getY() + getLastPoseError().getY());
-        packet.put("ωTarget", Math.toDegrees(poseEstimate.getHeading() + getLastPoseError().getHeading()));
+            packet.put("xTarget", poseEstimate.getX() + getLastPoseError().getX());
+            packet.put("yTarget", poseEstimate.getY() + getLastPoseError().getY());
+            packet.put("ωTarget", Math.toDegrees(poseEstimate.getHeading() + getLastPoseError().getHeading()));
 
-        packet.put("xError", getLastPoseError().getX());
-        packet.put("yError", getLastPoseError().getY());
-        packet.put("ωError", Math.toDegrees(getLastPoseError().getHeading()));
+            packet.put("xError", getLastPoseError().getX());
+            packet.put("yError", getLastPoseError().getY());
+            packet.put("ωError", Math.toDegrees(getLastPoseError().getHeading()));
 
-        packet.put("xVel", poseVelocity.getX());
-        packet.put("yVel", poseVelocity.getY());
-        packet.put("nVel", poseVelocity.vec().norm());
-        packet.put("ωVel", poseVelocity.getHeading());
+            packet.put("xVel", poseVelocity.getX());
+            packet.put("yVel", poseVelocity.getY());
+            packet.put("nVel", poseVelocity.vec().norm());
+            packet.put("ωVel", poseVelocity.getHeading());
 
-        if (driveSignal != null) { // NOTE: This vel is for the next iteration
-            packet.put("xVelTarget", driveSignal.getVel().getX());
-            packet.put("yVelTarget", driveSignal.getVel().getY());
-            packet.put("nVelTarget", driveSignal.getVel().vec().norm());
-            packet.put("ωVelTarget", driveSignal.getVel().getHeading());
+            if (driveSignal != null) { // NOTE: This vel is for the next iteration
+                packet.put("xVelTarget", driveSignal.getVel().getX());
+                packet.put("yVelTarget", driveSignal.getVel().getY());
+                packet.put("nVelTarget", driveSignal.getVel().vec().norm());
+                packet.put("ωVelTarget", driveSignal.getVel().getHeading());
+            }
+
+            draw(fieldOverlay, currentTrajectorySequence, currentSegment, targetPose, poseEstimate);
+
+            if (!dashboardConsumers.isEmpty()) {
+                dashboardConsumers.forEach(canvasConsumer -> canvasConsumer.accept(fieldOverlay));
+            }
+            if (!packetConsumers.isEmpty()) {
+                packetConsumers.forEach(packetConsumer -> packetConsumer.accept(packet));
+            }
+
+            packet.put("Latency", latencyClock.milliseconds());
+            latencyClock.reset();
+            Dashboard.sendPacket();
+        } else {
+//            Log.d("TrajectorySequenceRunner", "Latency: " + latencyClock.milliseconds());
+            latencyClock.reset();
         }
-
-        draw(fieldOverlay, currentTrajectorySequence, currentSegment, targetPose, poseEstimate);
-
-        if (dashboardConsumer != null) dashboardConsumer.accept(fieldOverlay);
-        if (packetConsumer != null) packetConsumer.accept(packet);
-
-        packet.put("Latency", latencyClock.milliseconds()); latencyClock.reset();
-        Dashboard.sendPacket();
 
         if (targetPose != null) StateCopyLocalizer.pose=targetPose;
         return driveSignal;
