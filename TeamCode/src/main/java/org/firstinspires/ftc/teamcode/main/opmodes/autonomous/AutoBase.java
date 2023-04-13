@@ -209,6 +209,7 @@ public abstract class AutoBase extends LinearOpMode {
         rr.setMotorPowers(0, 0, 0, 0);
         outtake.getTurret().stopMotor();
         outtake.getSlide().stopMotor();
+        rr.forceStopTrajectory();
     }
 
     private void printStartupStatus() {

@@ -211,6 +211,7 @@ public class ManualDrive extends LinearOpMode {
 
         // On termination
         roadrunner.setMotorPowers(0, 0, 0, 0);
+        roadrunner.forceStopTrajectory();
         Memory.LAST_POSE = roadrunner.getPoseEstimate();
     }
 
