@@ -220,8 +220,11 @@ public abstract class AutoBase extends LinearOpMode {
         else if (vision.getLastValidReading() == -1) camStatus = "FAILED TO READ";
         else camStatus = "FOUND [ " + vision.getReading() + " ]";
 
-//        String outtakeStatus;
-//        if (Math.max(outtake.getTurretPosition()) < )
+        String motorStatus;
+        if (Math.abs(outtake.getSlidePosition()) > 1) motorStatus = "OUTTAKE SLIDE NOT RESET";
+        else if (Math.abs(intake.getExtenderPosition()) > 1) motorStatus = "INTAKE EXTENDER NOT RESET";
+        else if (Math.abs(outtake.getTurretAngle()) > 1) motorStatus = "OUTTAKE TURRET NOT RESET";
+        else motorStatus = "READY";
 
 //        String sensorStatus;
 //        if (surroundSensors.frontDistance.isTimedout() || surroundSensors.leftDistance.isTimedout() || surroundSensors.rightDistance.isTimedout()) {
@@ -234,9 +237,10 @@ public abstract class AutoBase extends LinearOpMode {
 
         telemetry.addData("Vision", camStatus);
         telemetry.addData("    Debug", vision.getDebugData());
-//        telemetry.addData("Outtake motors", )
-        telemetry.addData("Turret Angle", outtake.getTurretAngle() + " -> " + outtake.getTurretTarget());
-        telemetry.addData("Extender Pos", outtake.getSlidePosition() + " -> " + outtake.getSlideTarget());
+        telemetry.addData("Motor status", motorStatus);
+        telemetry.addData("    Turret Angle", outtake.getTurretAngle() + " -> " + outtake.getTurretTarget());
+        telemetry.addData("    Outtake Pos", outtake.getSlidePosition() + " -> " + outtake.getSlideTarget());
+        telemetry.addData("    Extender Pos", intake.getExtenderPosition() + " -> " + intake.getExtenderTarget());
 //        telemetry.addData("Sensors", sensorStatus);
 //        telemetry.addData("    Occupancy", freightSystem.getDetectionDistance());
 //        telemetry.addData("    FrontDist", (surroundSensors.frontDistance.isTimedout() ? "TIMEOUT - " : "") + String.format("%.2f", surroundSensors.getFrontDist()));

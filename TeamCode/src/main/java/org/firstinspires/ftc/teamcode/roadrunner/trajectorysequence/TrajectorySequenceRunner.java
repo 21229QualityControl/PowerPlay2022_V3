@@ -207,7 +207,7 @@ public class TrajectorySequenceRunner {
                         Log.d("Roadrunner", "Wait segment condition met, time=" + deltaTime + ", timeout="+currentSegment.getDuration());
                     } else if (deltaTime >= currentSegment.getDuration()) {
                         currentSegmentIndex++;
-                        Log.d("Roadrunner", "Wait segment expired after " + currentSegment.getDuration());
+                        Log.d("Roadrunner", "Wait segment expired after time=" + deltaTime + ", timeout=" + currentSegment.getDuration());
                     }
 
                 } else if (currentSegment instanceof LinearSyncSegment) {
