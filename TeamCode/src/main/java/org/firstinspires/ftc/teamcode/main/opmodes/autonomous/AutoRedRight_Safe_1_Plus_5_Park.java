@@ -47,7 +47,7 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
 
         moveToJunctionAndScore(0);
 
-//        park();
+        park();
     }
 
     private void moveOver() {

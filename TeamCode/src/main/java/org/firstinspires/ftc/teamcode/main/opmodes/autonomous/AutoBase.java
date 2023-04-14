@@ -52,7 +52,7 @@ public abstract class AutoBase extends LinearOpMode {
     public static boolean SIGNAL_OVERRIDE = false;
 
     // default values
-    private final int defaultSignal = 18; // middle
+    private final int defaultSignal = 2; // middle
 
     final public void runOpMode() throws InterruptedException {
         /* ********** INIT ********** */
@@ -156,6 +156,7 @@ public abstract class AutoBase extends LinearOpMode {
             SIGNAL = vision.getLastValidReading();
             if (SIGNAL == -1) SIGNAL = defaultSignal;
         }
+        Log.d("Autonomous", "Signal used: " + SIGNAL);
 
         // set pose again just in case
         rr.setPoseEstimate(getStartPose());

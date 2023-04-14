@@ -50,7 +50,7 @@ public class AutoRedLeft_Shared_1_Plus_5_Park extends AutoBase {
         follow(auto.sendLastCone(builder(CYCLE_POSITION.asPose2d()), TURRET_ANGLE));
         Log.d("Autonomous", String.format("cycle(last) Ended %.3f", getRuntime()));
 
-//        park();
+        park();
     }
 
     private void moveToJunction() {
