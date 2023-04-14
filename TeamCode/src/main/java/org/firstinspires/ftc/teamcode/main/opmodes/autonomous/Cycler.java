@@ -29,7 +29,7 @@ public class Cycler {
                     intake.armIntake();
                     intake.clawRelease(); // to go through gap
 
-                    waitSeconds(0.1);
+                    waitSeconds(0.01);
                     if (Thread.interrupted()) return;
 
                     // raise up
@@ -44,7 +44,7 @@ public class Cycler {
                     outtake.latchBarely();
                     intake.clawWide(); // now through gap, open claw wide
 
-                    waitSeconds(0.4);
+                    waitSeconds(0.3);
                     if (Thread.interrupted()) return;
 
                     // drop cone
@@ -70,38 +70,42 @@ public class Cycler {
                     // lift off stack
                     intake.vslideLiftLevel(stackLayer);
 
-                    waitSeconds(0.2);
+                    waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
                     // start arm
                     intake.armStore();
+                    if (stackLayer != 5) {
+                        waitSeconds(0.05);
+                    } else { // top layer receives special treatment
+                        waitSeconds(0.05);
+                        intake.extenderTo(intake.getExtenderTarget() - 80);
+                        waitSeconds(0.10); // wait extra for top layer
+                    }
+                    if (Thread.interrupted()) return;
+
+                    // pull back soon after
+                    intake.extenderTo(Intake.EXTENDER_TRANSFER_AUTO_POS + 20);
 
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
-                    // pull back soon after
-                    intake.extendStore();
+                    // lower for transfer soon after
+                    intake.vslideTransferAuto();
 
-                    waitSeconds(0.2);
-                    if (Thread.interrupted()) return;
-
-                    intake.armTransfer();
-                    intake.vslideTransfer();
-
-                    waitSeconds(0.35);
+                    waitSeconds(0.25);
                     if (Thread.interrupted()) return;
 
                     // drop cone onto holder
                     intake.clawRelease();
 
-                    waitSeconds(0.2);
+                    waitSeconds(0.3);
                     if (Thread.interrupted()) return;
 
-                    // move arms to collect
-                    outtake.armTransferComplete();
+                    // move claw out of the way
                     intake.armStore();
 
-                    waitSeconds(0.15);
+                    waitSeconds(0.01);
                 })
                 .build();
     }
@@ -109,11 +113,12 @@ public class Cycler {
     public TrajectorySequence sendLastCone(TrajectorySequenceBuilder builder, double turretAngle) {
         return builder
                 .setKeepPosition(true)
-                .executeSync(() -> { // move intake out of the way
+                .executeSync(() -> {
+                    // move intake out of the way
                     intake.armStore();
                     intake.clawRelease(); // to go through gap
 
-                    waitSeconds(0.1);
+                    waitSeconds(0.01);
                     if (Thread.interrupted()) return;
 
                     // raise up
@@ -127,7 +132,7 @@ public class Cycler {
 
                     outtake.latchBarely();
 
-                    waitSeconds(0.4);
+                    waitSeconds(0.3);
                     if (Thread.interrupted()) return;
 
                     // drop cone
@@ -151,37 +156,48 @@ public class Cycler {
     public TrajectorySequence grabAndTransfer(TrajectorySequenceBuilder builder, int stackLayer) {
         return builder
                 .setKeepPosition(true)
-                .executeSync(() -> { // grab next
+                .executeSync(() -> {
+                    // grab next
                     intake.clawGrab();
-                })
-                .waitSeconds(0.15)
-                .executeSync(() -> { // lift off stack
-                    intake.vslideLevel(stackLayer);
-                })
-                .waitSeconds(0.15)
-                .executeSync(() -> { // pull back
-                    intake.armTransfer();
-                    intake.extendStore();
-                })
-                .waitSeconds(0.1)
-                .executeSync(() -> {
-                    intake.vslideDown();
-                })
-                .waitSeconds(0.35)
-                .executeSync(() -> { // drop cone onto holder
-                    intake.clawWide();
-                })
-                .waitSeconds(0.03)
-                .executeSync(() -> { // move arms to collect
-                    outtake.armTransferComplete();
+
+                    waitSeconds(0.3);
+                    if (Thread.interrupted()) return;
+
+                    // lift off stack
+                    intake.vslideLiftLevel(stackLayer);
+
+                    waitSeconds(0.2);
+                    if (Thread.interrupted()) return;
+
+                    // start arm
                     intake.armStore();
+
+                    waitSeconds(0.1);
+                    if (Thread.interrupted()) return;
+
+                    // pull back soon after
+                    intake.extendStore();
+
+                    waitSeconds(0.2);
+                    if (Thread.interrupted()) return;
+
+                    intake.armTransferAuto();
+                    intake.vslideTransferAuto();
+
+                    waitSeconds(0.4);
+                    if (Thread.interrupted()) return;
+
+                    // drop cone onto holder
+                    intake.clawRelease();
+
+                    waitSeconds(0.1);
+                    if (Thread.interrupted()) return;
+
+                    // move claw out of the way
+                    intake.armStore();
+
+                    waitSeconds(0.01);
                 })
-                .waitSeconds(0.1)
-                .executeSync(() -> {
-                    outtake.latchBarely();
-                    intake.clawClosed();
-                })
-                .waitSeconds(0.05)
                 .build();
     }
 
