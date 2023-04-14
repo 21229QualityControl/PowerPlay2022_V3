@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.opmodes.autonomous;
+package org.firstinspires.ftc.teamcode.main.opmodes.autonomous.safe_1_plus_5;
 
 import android.util.Log;
 
@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.main.environment.FieldConstants;
+import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.StateCopyLocalizer;
 import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 

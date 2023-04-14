@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.opmodes.autonomous;
+package org.firstinspires.ftc.teamcode.main.opmodes.autonomous.shared_1_plus_5;
 
 import android.util.Log;
 
@@ -8,27 +8,28 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.main.environment.FieldConstants;
+import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
-@Autonomous(name = "🔵 ◢ Blue Right Auto Shared 1+5", group = "Auto Shared 1+5", preselectTeleOp = "Manual Drive")
-public class AutoBlueRight_Shared_1_Plus_5_Park extends AutoBase {
-    public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.blueRightConeStack.plus(new Vector2d(26, -1)), Math.toRadians(180));
+@Autonomous(name = "🔴 ◢ Red Right Auto Shared 1+5", group = "Auto Shared 1+5", preselectTeleOp = "Manual Drive")
+public class AutoRedRight_Shared_1_Plus_5 extends AutoBase {
+    public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-33, 0)), Math.toRadians(0));
     public static double TURRET_ANGLE = -49;
 
     @Override
     protected boolean isBlue() {
-        return true;
+        return false;
     }
 
     @Override
     protected Pose2d getStartPose() {
-        return FieldConstants.blueRightStartingPosition;
+        return FieldConstants.redRightStartingPosition;
     }
 
     @Override
     protected void printDescription() {
-        telemetry.addData("Description", "🔵⌊    ◢⌋ Shared 1+5 and park");
+        telemetry.addData("Description", "🔴⌊    ◢⌋ Shared 1+5 and park");
     }
 
     @Override
@@ -57,7 +58,10 @@ public class AutoBlueRight_Shared_1_Plus_5_Park extends AutoBase {
         Log.d("Autonomous", String.format("moveToJunction() Start %.3f", getRuntime()));
         follow(builder()
                 .lineTo(new Vector2d(getStartPose().getX(), CYCLE_POSITION.getY()))
-                .lineToSplineHeading(CYCLE_POSITION.asPose2d())
+                .turnTo(CYCLE_POSITION.getHeading())
+                .setKeepPosition(true)
+                .waitSeconds(0.1)
+                .waitForCondition(() -> !rr.isPositionMaintainerBusy(), 3000)
                 .build());
 
         Log.d("Autonomous", String.format("moveToJunction() Ended %.3f", getRuntime()));
@@ -69,17 +73,17 @@ public class AutoBlueRight_Shared_1_Plus_5_Park extends AutoBase {
         switch (SIGNAL) {
             case 1:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(3, 2).plus(new Vector2d(-0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(2, 3).plus(new Vector2d(0.5)))
                         .build());
                 break;
             default:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(4, 2).plus(new Vector2d(-0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(1, 3).plus(new Vector2d(0.5)))
                         .build());
                 break;
             case 3:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(5, 2).plus(new Vector2d(-2)))
+                        .strafeTo(FieldConstants.getSquareCenter(0, 3).plus(new Vector2d(2)))
                         .build());
                 break;
         }

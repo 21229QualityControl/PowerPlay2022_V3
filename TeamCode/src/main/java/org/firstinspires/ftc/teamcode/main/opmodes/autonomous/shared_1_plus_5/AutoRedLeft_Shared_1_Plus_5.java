@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.main.opmodes.autonomous;
+package org.firstinspires.ftc.teamcode.main.opmodes.autonomous.shared_1_plus_5;
 
 import android.util.Log;
 
@@ -8,11 +8,12 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.main.environment.FieldConstants;
+import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
 @Autonomous(name = "🔴 ◣ Red Left Auto Shared 1+5", group = "Auto Shared 1+5", preselectTeleOp = "Manual Drive")
-public class AutoRedLeft_Shared_1_Plus_5_Park extends AutoBase {
+public class AutoRedLeft_Shared_1_Plus_5 extends AutoBase {
     public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(33, 1)), Math.toRadians(180));
     public static double TURRET_ANGLE = 49;
 
