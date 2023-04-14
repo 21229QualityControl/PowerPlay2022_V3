@@ -117,11 +117,17 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
                     // start arm
                     intake.armStore();
 
-                    waitSecondsSimple(0.15);
+                    if (stackLayer != 5) {
+                        waitSecondsSimple(0.20);
+                    } else { // top layer receives special treatment
+                        waitSecondsSimple(0.10);
+                        intake.extenderTo(intake.getExtenderTarget() - 80);
+                        waitSecondsSimple(0.30); // wait extra for top layer
+                    }
                     if (Thread.interrupted()) return;
 
                     // pull back soon after
-                    intake.extendStore();
+                    intake.extendTransferAuto();
 
                     waitSecondsSimple(0.2);
                     if (Thread.interrupted()) return;
@@ -138,8 +144,8 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
                     waitSecondsSimple(0.1);
                     if (Thread.interrupted()) return;
 
-                    // move claw out of the way
-                    intake.armStore();
+                    // move claw completely out of the way
+                    intake.armIntake();
 
                     waitSecondsSimple(0.01);
                 })
@@ -149,6 +155,11 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
     private void park() {
         Log.d("Autonomous", String.format("park() Start %.3f", getRuntime()));
         outtake.setTurretAngle(0);
+        outtake.store();
+        intake.armStore();
+        intake.extendStore();
+        intake.clawClosed();
+        intake.vslideDown();
         switch (SIGNAL) {
             case 1:
                 follow(builder()

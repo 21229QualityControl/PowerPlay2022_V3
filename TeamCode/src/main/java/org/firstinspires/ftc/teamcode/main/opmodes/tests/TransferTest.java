@@ -69,6 +69,9 @@ public class TransferTest extends LinearOpMode {
 
             // Transfer
             if (g1.yOnce()) {
+                outtake.armTransferAuto();
+                intake.extendTransferAuto();
+                intake.vslideTransferAuto();
                 intake.armTransferAuto();
             }
 
