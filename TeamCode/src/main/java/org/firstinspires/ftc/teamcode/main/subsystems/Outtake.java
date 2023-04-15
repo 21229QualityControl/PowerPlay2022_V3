@@ -9,8 +9,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.util.hardware.AngleMotorWithPID;
+import org.firstinspires.ftc.teamcode.util.hardware.BeamBreakSensor;
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
 import org.firstinspires.ftc.teamcode.util.hardware.DualMotorWithPID;
+import org.firstinspires.ftc.teamcode.util.hardware.MagnetSwitchSensor;
 
 @Config
 public class Outtake {
@@ -58,6 +60,8 @@ public class Outtake {
     private Servo latch;
     private Servo arm;
     private Servo guide;
+    private BeamBreakSensor guideSensor;
+    private MagnetSwitchSensor slideSensor;
 
     private boolean outtakePidEnabled = true;
 
@@ -68,6 +72,8 @@ public class Outtake {
         this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
+        this.guideSensor = new BeamBreakSensor(hardwareMap, "guideBeamBreak");
+        this.slideSensor = new MagnetSwitchSensor(hardwareMap, "outtakeMagnetSwitch");
 
         this.slide.setMaxPower(1.0);
     }
@@ -79,6 +85,8 @@ public class Outtake {
         this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
+        this.guideSensor = new BeamBreakSensor(hardwareMap, "guideBeamBreak");
+        this.slideSensor = new MagnetSwitchSensor(hardwareMap, "outtakeMagnetSwitch");
 
         this.turret.getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         this.slide.getMainMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
