@@ -92,6 +92,7 @@ public class ManualDrive extends LinearOpMode {
     private boolean extendIntake = false;
     private boolean autoStack = false;
     private boolean autoTransfer = false;
+    private boolean scheduleSlideEncoderReset = false;
     private int stacknum = 1; // 1-5
     private double raisedTurretAngle = 0;
 
@@ -405,6 +406,7 @@ public class ManualDrive extends LinearOpMode {
         if (g2.aOnce()) {
             outtake.latchOpen();
             outtake.guideRetractDown();
+            if (!outtake.isSlideDown() || outtake.getSlidePosition() > 10) scheduleSlideEncoderReset = true;
             new Thread(() -> { // TODO: Better wait solution
                 sleep(150);
                 outtake.store();
@@ -448,8 +450,10 @@ public class ManualDrive extends LinearOpMode {
         if (Math.abs(slideStick) < 0.01) { // if stick not engaged, use PID
             outtake.enableOuttakePID();
         } else if (slideStick < 0 && outtake.getSlidePosition() <= 10) { // if forcing down, target bottom
-            outtake.enableOuttakePID();
+            outtake.disableOuttakePID();
+            outtake.setOuttakeOverridePower(-0.2);
             outtake.turretCenter(); // center turret when too low
+            scheduleSlideEncoderReset = true;
         } else { // if stick is engaged and not forcing down, apply manual power
             outtake.disableOuttakePID();
             outtake.setOuttakeOverridePower(Math.pow(slideStick, 3) * 0.75);
@@ -463,6 +467,11 @@ public class ManualDrive extends LinearOpMode {
         double armStick = -g2.right_stick_y;
         if (Math.abs(armStick) > 0.01) {
             outtake.setArmPosition(outtake.getArmPosition() + armStick * -0.015);
+        }
+
+        if (scheduleSlideEncoderReset && outtake.isSlideDown()) {
+            outtake.getSlide().zeroMotorInternals();
+            scheduleSlideEncoderReset = false;
         }
     }
 
