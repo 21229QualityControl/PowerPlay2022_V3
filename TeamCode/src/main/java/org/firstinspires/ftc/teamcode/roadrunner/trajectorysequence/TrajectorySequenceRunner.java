@@ -71,8 +71,8 @@ public class TrajectorySequenceRunner {
 
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
 
-    public List<Consumer<Canvas>> dashboardConsumers = new ArrayList<>();
-    public List<Consumer<TelemetryPacket>> packetConsumers = new ArrayList<>();
+    public final List<Consumer<Canvas>> dashboardConsumers = new ArrayList<>();
+    public final List<Consumer<TelemetryPacket>> packetConsumers = new ArrayList<>();
 
     public TrajectorySequenceRunner(TrajectoryFollower follower, PositionMaintainer positionMaintainer, PIDCoefficients headingPIDCoefficients) {
         this.follower = follower;

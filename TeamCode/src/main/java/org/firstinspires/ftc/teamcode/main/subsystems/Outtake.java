@@ -68,7 +68,7 @@ public class Outtake {
     public Outtake(HardwareMap hardwareMap) {
         this.turret = new AngleMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeTurret"), TURRET_TICKS_PER_REV, TURRET_PID);
         this.slide = new DualMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeSlide1"), HardwareCreator.createMotor(hardwareMap, "outtakeSlide2"), true,
-                SLIDE_PID, (x, y) -> (x > 50 ? 0.05 : 0.0)); // Feedforward, apply power of 0.05 when pos>50
+                SLIDE_PID, (x, y) -> (x > 50 ? 0.10 : 0.0)); // Feedforward, apply power of 0.10 when pos>50
         this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
