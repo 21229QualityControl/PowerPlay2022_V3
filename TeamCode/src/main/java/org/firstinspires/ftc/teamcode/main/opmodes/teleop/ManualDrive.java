@@ -373,7 +373,9 @@ public class ManualDrive extends LinearOpMode {
             if (intake.isArmBlockingOuttake()) intake.armStore();
 
             outtake.setTurretAngle(raisedTurretAngle);
-            outtake.raiseHigh();
+            outtake.raisePrep();
+            if (outtake.getSlidePosition() < 50) outtake.slideHigh();
+            else outtake.setSlidePosition(Outtake.SLIDE_HIGH + 50);
         }
 
         // Outtake mid (dpad right)
@@ -382,7 +384,9 @@ public class ManualDrive extends LinearOpMode {
 
             raisedTurretAngle = 0;
             outtake.setTurretAngle(raisedTurretAngle);
-            outtake.raiseMid();
+            outtake.raisePrep();
+            if (outtake.getSlidePosition() < 50) outtake.slideMid();
+            else outtake.setSlidePosition(Outtake.SLIDE_MID + 50);
         }
 
         // Outtake low (dpad down)
@@ -412,6 +416,12 @@ public class ManualDrive extends LinearOpMode {
         // Move guide and arm out (Y)
         if (g2.yOnce()) {
             outtake.raisePrep();
+        }
+
+        // Move guide and arm back (B)
+        if (g2.bOnce()) {
+            outtake.guideRetractDown();
+            outtake.armTransfer();
         }
 
         // Turret presets (Bumpers and X)
