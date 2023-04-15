@@ -292,9 +292,9 @@ public class ManualDrive extends LinearOpMode {
 
         // Go Transfer (Y)
         if (g1.yOnce()) {
+            intake.setExtenderMaxPower(0.9);
             intake.extendStore();
             intake.clawGrab();
-            intake.extendStore();
             outtake.turretCenter();
             outtake.armTransfer();
             intake.vslideTransfer();
@@ -306,24 +306,46 @@ public class ManualDrive extends LinearOpMode {
                 intake.clawRelease();
                 sleep(300);
                 intake.vslideDown();
-                intake.armStore();
+                if (!intake.isArmOut()) intake.armStore();
             }).start();
         }
 
         // Go Storage or Intake (X)
         if (g1.xOnce()) {
-            if (intake.isArmOut()) { // Go Storage
-                intake.extendStore();
-                intake.armStore();
-                intake.vslideDown();
-                if (intake.isClawOpen()) intake.clawRelease();
-            } else { // Go Intake
-                if (extendIntake) intake.extendCycleTeleop();
-                intake.armIntake();
-                intake.vslideLevel(1);
-                intake.clawRelease();
-                delayClawWide();
+            if (extendIntake) {
+                if (intake.getExtenderTarget() > Intake.EXTENDER_BEFORE_CYCLE_TELEOP_POS + 50 && intake.isArmOut()) { // Go Storage
+                    intake.setExtenderMaxPower(0.9);
+                    intake.extendStore();
+                    intake.armStore();
+                    intake.vslideDown();
+                    if (intake.isClawOpen()) intake.clawRelease();
+                } else if (intake.getExtenderTarget() > Intake.EXTENDER_BEFORE_CYCLE_TELEOP_POS - 50) { // Finish extending Intake
+                    intake.setExtenderMaxPower(0.6);
+                    intake.extendCycleTeleop();
+                    intake.armIntake();
+                } else { // Pre-extend if somehow didn't
+                    intake.armIntake();
+                    intake.setExtenderMaxPower(0.6);
+                    if (intake.getExtenderTarget() < 50) intake.extenderTo(Intake.EXTENDER_BEFORE_CYCLE_TELEOP_POS);
+                    intake.clawRelease();
+                    delayClawWide();
+                }
+            } else {
+                if (intake.isArmOut()) { // Go Storage
+                    intake.setExtenderMaxPower(0.9);
+                    intake.extendStore();
+                    intake.armStore();
+                    intake.vslideDown();
+                    if (intake.isClawOpen()) intake.clawRelease();
+                } else { // Go Intake
+                    intake.setExtenderMaxPower(0.9);
+                    intake.extendStore();
+                    intake.armIntake();
+                    intake.vslideLevel(1);
+                    intake.clawRelease();
+                    delayClawWide();
 //                autoTransferTimer.reset();
+                }
             }
         }
 
@@ -336,8 +358,13 @@ public class ManualDrive extends LinearOpMode {
         // Toggle extension
         if (g1.startOnce()) {
             extendIntake = !extendIntake;
-            if (extendIntake) intake.extendCycleTeleop();
-            else intake.extendStore();
+            if (extendIntake) {
+                intake.setExtenderMaxPower(0.6);
+                intake.extendCycleTeleop();
+            } else {
+                intake.setExtenderMaxPower(0.9);
+                intake.extendStore();
+            }
         }
 
         // Adjust arm (RightStickY)
@@ -355,6 +382,7 @@ public class ManualDrive extends LinearOpMode {
             if (extendIntake) { // will prepare for auto-cycle only when extending out
                 intake.clawRelease();
                 delayClawWide();
+                intake.setExtenderMaxPower(0.6);
                 intake.extendCycleTeleop();
                 intake.armIntake();
             }
@@ -371,7 +399,15 @@ public class ManualDrive extends LinearOpMode {
     private void outtakeControls() {
         // Outtake high (dpad up)
         if (g2.dpadUpOnce()) {
-            if (intake.isArmBlockingOuttake()) intake.armStore();
+            if (extendIntake) {
+                intake.armIntake();
+                intake.setExtenderMaxPower(0.6);
+                if (intake.getExtenderTarget() < 50) intake.extenderTo(Intake.EXTENDER_BEFORE_CYCLE_TELEOP_POS);
+                intake.clawRelease();
+                delayClawWide();
+            } else {
+                if (intake.isArmBlockingOuttake()) intake.armStore();
+            }
 
             outtake.setTurretAngle(raisedTurretAngle);
             outtake.raisePrep();
@@ -381,7 +417,15 @@ public class ManualDrive extends LinearOpMode {
 
         // Outtake mid (dpad right)
         if (g2.dpadRightOnce()) {
-            if (intake.isArmBlockingOuttake()) intake.armStore();
+            if (extendIntake) {
+                intake.armIntake();
+                intake.setExtenderMaxPower(0.6);
+                if (intake.getExtenderTarget() < 50) intake.extenderTo(Intake.EXTENDER_BEFORE_CYCLE_TELEOP_POS);
+                intake.clawRelease();
+                delayClawWide();
+            } else {
+                if (intake.isArmBlockingOuttake()) intake.armStore();
+            }
 
             raisedTurretAngle = 0;
             outtake.setTurretAngle(raisedTurretAngle);
@@ -564,6 +608,8 @@ public class ManualDrive extends LinearOpMode {
     private void autoStackCycle() {
         Pose2d pose = roadrunner.getPoseEstimate();
         autoStack = true;
+
+        intake.setExtenderMaxPower(1.0);
 
         roadrunner.followTrajectorySequence(auto.grabAndTransfer(builder(pose), stacknum));
         stacknum--;
