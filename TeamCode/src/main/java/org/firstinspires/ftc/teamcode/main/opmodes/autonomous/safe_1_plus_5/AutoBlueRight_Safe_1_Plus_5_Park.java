@@ -5,7 +5,6 @@ import android.util.Log;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.main.environment.FieldConstants;
@@ -14,26 +13,26 @@ import org.firstinspires.ftc.teamcode.roadrunner.drive.StateCopyLocalizer;
 import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
-@Autonomous(name = "🔴 ◢ Red Right Auto Safe 1+5", group = "Auto Safe 1+5", preselectTeleOp = "Manual Drive")
-public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
-    public static CPose2d SCORING_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-60, 0)), Math.toRadians(0));
-    public static CPose2d INTAKING_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-46, 0)), Math.toRadians(0));
+@Autonomous(name = "🔵 ◢ Blue Right Auto Safe 1+5", group = "Auto Safe 1+5", preselectTeleOp = "Manual Drive")
+public class AutoBlueRight_Safe_1_Plus_5_Park extends AutoBase {
+    public static CPose2d SCORING_POSITION = new CPose2d(FieldConstants.blueRightConeStack.plus(new Vector2d(60, 0)), Math.toRadians(180));
+    public static CPose2d INTAKING_POSITION = new CPose2d(FieldConstants.blueRightConeStack.plus(new Vector2d(46, 0)), Math.toRadians(180));
     public static double TURRET_ANGLE = 55;
     public static int EXTENDER_TICKS = 1030;
 
     @Override
     protected boolean isBlue() {
-        return false;
+        return true;
     }
 
     @Override
     protected Pose2d getStartPose() {
-        return FieldConstants.redRightStartingPosition;
+        return FieldConstants.blueRightStartingPosition;
     }
 
     @Override
     protected void printDescription() {
-        telemetry.addData("Description", "🔴⌊    ◢⌋ Safe 1+5 and park");
+        telemetry.addData("Description", "🔵⌊    ◢⌋ Safe 1+5 and park");
     }
 
     @Override
@@ -167,17 +166,17 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
         switch (SIGNAL) {
             case 1:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(2, 3).plus(new Vector2d(0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(3, 2).plus(new Vector2d(-0.5)))
                         .build());
                 break;
             default:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(1, 3).plus(new Vector2d(0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(4, 2).plus(new Vector2d(-0.5)))
                         .build());
                 break;
             case 3:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(0, 3).plus(new Vector2d(2)))
+                        .strafeTo(FieldConstants.getSquareCenter(5, 2).plus(new Vector2d(-2)))
                         .build());
                 break;
         }

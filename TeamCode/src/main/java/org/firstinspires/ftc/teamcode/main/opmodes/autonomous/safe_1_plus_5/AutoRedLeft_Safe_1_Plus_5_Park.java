@@ -14,11 +14,11 @@ import org.firstinspires.ftc.teamcode.roadrunner.drive.StateCopyLocalizer;
 import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
-@Autonomous(name = "🔴 ◢ Red Right Auto Safe 1+5", group = "Auto Safe 1+5", preselectTeleOp = "Manual Drive")
-public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
-    public static CPose2d SCORING_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-60, 0)), Math.toRadians(0));
-    public static CPose2d INTAKING_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-46, 0)), Math.toRadians(0));
-    public static double TURRET_ANGLE = 55;
+@Autonomous(name = "🔴 ◣ Red Left Auto Safe 1+5", group = "Auto Safe 1+5", preselectTeleOp = "Manual Drive")
+public class AutoRedLeft_Safe_1_Plus_5_Park extends AutoBase {
+    public static CPose2d SCORING_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(60, -1)), Math.toRadians(180));
+    public static CPose2d INTAKING_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(46, -1)), Math.toRadians(180));
+    public static double TURRET_ANGLE = -55;
     public static int EXTENDER_TICKS = 1030;
 
     @Override
@@ -28,12 +28,13 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
 
     @Override
     protected Pose2d getStartPose() {
-        return FieldConstants.redRightStartingPosition;
+        return FieldConstants.redLeftStartingPosition;
     }
 
     @Override
     protected void printDescription() {
-        telemetry.addData("Description", "🔴⌊    ◢⌋ Safe 1+5 and park");
+        telemetry.addData("Description", "🔴⌊◣    ⌋ Safe 1+5 and park");
+        telemetry.addData("Reminder", "This auto has been offset 1 inch closer to the drivers");
     }
 
     @Override
@@ -167,17 +168,17 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
         switch (SIGNAL) {
             case 1:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(2, 3).plus(new Vector2d(0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(5, 3).plus(new Vector2d(-2, -1)))
                         .build());
                 break;
             default:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(1, 3).plus(new Vector2d(0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(4, 3).plus(new Vector2d(-0.5, -1)))
                         .build());
                 break;
             case 3:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(0, 3).plus(new Vector2d(2)))
+                        .strafeTo(FieldConstants.getSquareCenter(3, 3).plus(new Vector2d(-0.5, -1)))
                         .build());
                 break;
         }
