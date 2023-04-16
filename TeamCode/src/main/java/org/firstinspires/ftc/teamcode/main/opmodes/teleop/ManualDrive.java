@@ -122,6 +122,7 @@ public class ManualDrive extends LinearOpMode {
             outtake = new Outtake(hardwareMap);
             outtake.getSlide().getMainMotor().setPower(-0.3);
             outtake.getSlide().getSecondMotor().setPower(-0.3);
+            intake.getExtender().getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             intake.getExtender().getMotor().setPower(-0.3);
 
             smartGameTimer = new SmartGameTimer(false);
@@ -186,6 +187,7 @@ public class ManualDrive extends LinearOpMode {
                 sleep(20);
                 outtake.getSlide().zeroMotorInternals();
                 intake.getExtender().zeroMotorInternals();
+                intake.getExtender().getMotor().setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             smartGameTimer.resetIfStandard();
         }

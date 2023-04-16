@@ -4,22 +4,24 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
-import org.firstinspires.ftc.teamcode.util.hardware.MotorWithPID;
+import org.firstinspires.ftc.teamcode.util.hardware.MotorWithRunToPositionPID;
 
 @Config
 public class Intake {
-    private MotorWithPID extender;
+    private MotorWithRunToPositionPID extender;
     private Servo arm;
     private Servo claw;
     private Servo vslide;
 
     public static final double EXTENDER_TICKS_PER_REV = ((1+(46.0/11.0)) * 28);
     public static final double EXTENDER_SPOOL_CIRCUMFERENCE = 112 / 25.4; // 112mm
-    public static PIDCoefficients EXTENDER_PID = new PIDCoefficients(0.010, 0, 0.0001);
+    public static PIDFCoefficients EXTENDER_VEL_PIDF = new PIDFCoefficients(23, 0.005, 5, 0.0);
+    public static double EXTENDER_POS_P = 25;
     private static int EXTENDER_MIN = 0;
     private static int EXTENDER_MAX = 1050; // 1080 is technically the max
     public static int EXTENDER_STORED_POS = 0;
@@ -60,7 +62,7 @@ public class Intake {
     public static double VSLIDE_CLEAR_LVL4_POS = 0.61; // Lift cone above a 4 stack
 
     public Intake(HardwareMap hardwareMap) {
-        this.extender = new MotorWithPID(HardwareCreator.createMotor(hardwareMap, "intakeExtender"), EXTENDER_PID);
+        this.extender = new MotorWithRunToPositionPID(HardwareCreator.createMotor(hardwareMap, "intakeExtender"), EXTENDER_VEL_PIDF, EXTENDER_POS_P);
         this.extender.getMotor().setDirection(DcMotorSimple.Direction.REVERSE);
         this.arm = HardwareCreator.createServo(hardwareMap, "intakeArm", HardwareCreator.ServoType.AXON);
         this.claw = HardwareCreator.createServo(hardwareMap, "intakeClaw", HardwareCreator.ServoType.AXON);
@@ -102,13 +104,10 @@ public class Intake {
     public int getExtenderPosition() {
         return this.extender.getCurrentPosition();
     }
-    public double getExtenderPower() {
-        return this.extender.getPower();
-    }
     public void setExtenderMaxPower(double maxPower) {
         this.extender.setMaxPower(maxPower);
     }
-    public MotorWithPID getExtender() {
+    public MotorWithRunToPositionPID getExtender() {
         return this.extender;
     }
     public double extenderTicksToInches(int ticks) {

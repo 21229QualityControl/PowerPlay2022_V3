@@ -293,6 +293,7 @@ public abstract class AutoBase extends LinearOpMode {
         intake.initialize();
 
         // push slide into their limits
+        intake.getExtender().getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.getExtender().getMotor().setPower(-0.3);
         outtake.getSlide().getMainMotor().setPower(-0.3);
         outtake.getSlide().getSecondMotor().setPower(-0.3);
@@ -306,6 +307,7 @@ public abstract class AutoBase extends LinearOpMode {
 
         // reset the encoders
         intake.getExtender().zeroMotorInternals();
+        intake.getExtender().getMotor().setMode(DcMotor.RunMode.RUN_TO_POSITION);
         outtake.getTurret().setInternalAngle(0);
         outtake.getSlide().zeroMotorInternals();
 
