@@ -5,6 +5,7 @@ import android.util.Log;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.main.environment.FieldConstants;
@@ -15,10 +16,10 @@ import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 @Config
 @Autonomous(name = "🔴 ◢ Red Right Auto Safe 1+5", group = "Auto Safe 1+5", preselectTeleOp = "Manual Drive")
 public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
-    public static CPose2d SCORING_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-58, 0)), Math.toRadians(0));
+    public static CPose2d SCORING_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-60, 0)), Math.toRadians(0));
     public static CPose2d INTAKING_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-46, 0)), Math.toRadians(0));
-    public static double TURRET_ANGLE = 49;
-    public static int EXTENDER_TICKS = 1050;
+    public static double TURRET_ANGLE = 51;
+    public static int EXTENDER_TICKS = 1030;
 
     @Override
     protected boolean isBlue() {
@@ -32,7 +33,7 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
 
     @Override
     protected void printDescription() {
-        telemetry.addData("Description", "🔴⌊    ◢⌋ Shared 1+5 and park");
+        telemetry.addData("Description", "🔴⌊    ◢⌋ Safe 1+5 and park");
     }
 
     @Override
@@ -65,6 +66,15 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
         follow(builder(new Pose2d(StateCopyLocalizer.pose.vec(), INTAKING_POSITION.getHeading()))
                 .setKeepPosition(true)
                 .lineToLinearHeading(SCORING_POSITION.asPose2d())
+                .addTemporalMarker(0, 0, () -> {
+                    // reset slide encoder
+                    if (outtake.isSlideMagnetPresent()) {
+                        Log.d("Outtake", "Reset slide encoders from " + outtake.getSlidePosition());
+                        outtake.getSlide().zeroMotorInternals();
+                    } else {
+                        Log.d("Outtake", "Skipped slide encoder reset due to missing magnet");
+                    }
+                })
                 .addTemporalMarker(0, 2, () -> {
                     if (nextLayerStack > 0) {
                         intake.extenderTo(EXTENDER_TICKS);
@@ -112,23 +122,22 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
                     // lift off stack
                     intake.vslideLiftLevel(stackLayer);
 
-                    waitSecondsSimple(0.3);
+                    waitSecondsSimple(0.1);
                     if (Thread.interrupted()) return;
 
                     // start arm
-                    intake.armStore();
-
+                    intake.armTransferAuto();
                     if (stackLayer != 5) {
                         waitSecondsSimple(0.20);
                     } else { // top layer receives special treatment
                         waitSecondsSimple(0.10);
-                        intake.extenderTo(intake.getExtenderTarget() - 80);
-                        waitSecondsSimple(0.30); // wait extra for top layer
+                        intake.extenderTo(intake.getExtenderTarget() - 40);
+                        waitSecondsSimple(0.20); // wait extra for top layer
                     }
                     if (Thread.interrupted()) return;
 
                     // pull back soon after
-                    intake.extendTransferAuto();
+                    intake.extenderTo(60);
 
                     waitSecondsSimple(0.2);
                     if (Thread.interrupted()) return;
@@ -136,19 +145,13 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
                     intake.armTransferAuto();
                     intake.vslideTransferAuto();
 
-                    waitSecondsSimple(0.4);
+                    waitSecondsSimple(0.6);
                     if (Thread.interrupted()) return;
 
                     // drop cone onto holder
                     intake.clawRelease();
 
-                    waitSecondsSimple(0.1);
-                    if (Thread.interrupted()) return;
-
-                    // move claw completely out of the way
-                    intake.armIntake();
-
-                    waitSecondsSimple(0.01);
+                    waitSecondsSimple(0.2);
                 })
                 .build());
     }
@@ -160,7 +163,7 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
         intake.armStore();
         intake.extendStore();
         intake.clawClosed();
-        intake.vslideDown();
+        intake.vslideLevel(3); // in case there's something in the intake
         switch (SIGNAL) {
             case 1:
                 follow(builder()

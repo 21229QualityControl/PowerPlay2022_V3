@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.path.EmptyPathSegmentException;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.main.subsystems.Dashboard;
 import org.firstinspires.ftc.teamcode.main.subsystems.Drivetrain;
@@ -161,6 +162,8 @@ public abstract class AutoBase extends LinearOpMode {
         // set pose again just in case
         rr.setPoseEstimate(getStartPose());
 
+        intake.setExtenderMaxPower(1.0);
+
         // run user start
         onStart();
 
@@ -295,8 +298,8 @@ public abstract class AutoBase extends LinearOpMode {
         // push slide into their limits
         intake.getExtender().getMotor().setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.getExtender().getMotor().setPower(-0.3);
-        outtake.getSlide().getMainMotor().setPower(-0.3);
-        outtake.getSlide().getSecondMotor().setPower(-0.3);
+        outtake.getSlide().getMainMotor().setPower(-0.2);
+        outtake.getSlide().getSecondMotor().setPower(-0.2);
         sleep(1000);
 
         // stop motors

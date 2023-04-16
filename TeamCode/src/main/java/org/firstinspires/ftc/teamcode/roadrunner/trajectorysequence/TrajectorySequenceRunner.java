@@ -52,6 +52,8 @@ public class TrajectorySequenceRunner {
 
     public static int POSE_HISTORY_LIMIT = 100;
 
+    public static double LATENCY_WARNING_LIMIT = 100; // ms
+
     private final TrajectoryFollower follower;
     private final PositionMaintainer positionMaintainer;
 
@@ -286,11 +288,15 @@ public class TrajectorySequenceRunner {
                 packetConsumers.forEach(packetConsumer -> packetConsumer.accept(packet));
             }
 
-            packet.put("Latency", latencyClock.milliseconds());
+            double latency = latencyClock.milliseconds();
+            if (latency > LATENCY_WARNING_LIMIT) Log.d("Roadrunner", "HIGH LATENCY DETECTED: " + latency + " ms");
+            packet.put("Latency", latency);
             latencyClock.reset();
             Dashboard.sendPacket();
         } else {
-//            Log.d("TrajectorySequenceRunner", "Latency: " + latencyClock.milliseconds());
+            double latency = latencyClock.milliseconds();
+//            Log.d("TrajectorySequenceRunner", "Latency: " + latency);
+            if (latency > LATENCY_WARNING_LIMIT) Log.d("Roadrunner", "HIGH LATENCY DETECTED: " + latency + " ms");
             latencyClock.reset();
         }
 

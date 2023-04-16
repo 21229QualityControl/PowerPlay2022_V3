@@ -283,6 +283,10 @@ public class Outtake {
         return arm.getPosition() < ARM_TILT_OUT + 0.1;
     }
 
+    public boolean isSlideMagnetPresent() {
+        return slideSensor.isMagnetPresent();
+    }
+
     public boolean isSlideDown() {
         return slideSensor.isMagnetPresent() && Math.abs(slide.getVelocity()) < 3 && slide.getTargetPosition() < 5;
     }

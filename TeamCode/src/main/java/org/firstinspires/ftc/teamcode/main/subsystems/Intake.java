@@ -29,7 +29,7 @@ public class Intake {
     public static int EXTENDER_BEFORE_CYCLE_TELEOP_POS = 300;
     public static int EXTENDER_CYCLE_POS = 580; // 580 for auto
     public static int EXTENDER_BEFORE_STACK_POS = 460;
-    public static int EXTENDER_TRANSFER_AUTO_POS = 60;
+    public static int EXTENDER_TRANSFER_AUTO_POS = 70;
 
     private static double ARM_MIN = 0.137;
     private static double ARM_MAX = 0.585;
@@ -51,10 +51,10 @@ public class Intake {
     public static double VSLIDE_TRANSFER_POS = 0.4;
     public static double VSLIDE_TRANSFER_AUTO_POS = 0.44;
     public static double VSLIDE_LVL1_POS = 0.27;
-    public static double VSLIDE_LVL2_POS = 0.36;
-    public static double VSLIDE_LVL3_POS = 0.42;
-    public static double VSLIDE_LVL4_POS = 0.47;
-    public static double VSLIDE_LVL5_POS = 0.53;
+    public static double VSLIDE_LVL2_POS = 0.34;
+    public static double VSLIDE_LVL3_POS = 0.39;
+    public static double VSLIDE_LVL4_POS = 0.45;
+    public static double VSLIDE_LVL5_POS = 0.51;
     public static double VSLIDE_CLEAR_LVL0_POS = 0.49; // Lift cone off the ground
     public static double VSLIDE_CLEAR_LVL1_POS = 0.49; // Lift cone above a 1 stack
     public static double VSLIDE_CLEAR_LVL2_POS = 0.53; // Lift cone above a 2 stack
@@ -68,7 +68,7 @@ public class Intake {
         this.claw = HardwareCreator.createServo(hardwareMap, "intakeClaw", HardwareCreator.ServoType.AXON);
         this.vslide = HardwareCreator.createServo(hardwareMap, "intakeVSlide", HardwareCreator.ServoType.AXON);
 
-        this.extender.setMaxPower(1.0);
+        this.extender.setMaxPower(0.9);
     }
 
     public void initialize() {
@@ -79,7 +79,7 @@ public class Intake {
     }
 
     public void update() {
-        extender.update();
+        Dashboard.packet.put("extenderPosition", getExtenderPosition());
     }
 
     // Extender
