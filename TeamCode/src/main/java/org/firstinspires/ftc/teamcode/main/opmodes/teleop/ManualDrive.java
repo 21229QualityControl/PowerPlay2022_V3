@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.Cycler;
+import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.Cycler_1_Plus_5;
 import org.firstinspires.ftc.teamcode.main.subsystems.Dashboard;
 import org.firstinspires.ftc.teamcode.main.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.main.subsystems.GamePadController;
@@ -78,7 +78,7 @@ public class ManualDrive extends LinearOpMode {
     private Intake intake;
     private Outtake outtake;
     private Hub hub;
-    private Cycler auto;
+    private Cycler_1_Plus_5 auto;
     private LED led;
 
     private PositionMaintainer positionMaintainer;
@@ -130,7 +130,7 @@ public class ManualDrive extends LinearOpMode {
 
         positionMaintainer = new PositionMaintainer(KEEP_POSITION_TRANSLATIONAL_PID, KEEP_POSITION_TRANSLATIONAL_PID, KEEP_POSITION_HEADING_PID, KEEP_POSITION_TOLERANCE.asPose2d());
         led = new LED(hardwareMap);
-        auto = new Cycler(roadrunner, intake, outtake);
+        auto = new Cycler_1_Plus_5(roadrunner, intake, outtake);
 
         drivetrain.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.initialize();

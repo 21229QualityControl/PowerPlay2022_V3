@@ -73,7 +73,7 @@ public abstract class AutoBase extends LinearOpMode {
         this.rr = new Roadrunner(hardwareMap,hub, drivetrain);
         this.intake = new Intake(hardwareMap);
         this.outtake = new Outtake(hardwareMap);
-        this.auto = new Cycler(this.rr, this.intake, this.outtake);
+        this.auto = new Cycler_1_Plus_5(this.rr, this.intake, this.outtake);
         Memory.REMEMBERED_OUTTAKE = this.outtake;
         this.vision = new Vision(hardwareMap);
         this.led = new LED(hardwareMap);

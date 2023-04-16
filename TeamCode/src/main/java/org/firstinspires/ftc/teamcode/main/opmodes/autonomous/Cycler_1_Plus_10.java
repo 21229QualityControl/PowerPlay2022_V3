@@ -8,12 +8,12 @@ import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySe
 
 import java.util.function.Supplier;
 
-public class Cycler {
+public class Cycler_1_Plus_10 {
     private Roadrunner roadrunner;
     private Intake intake;
     private Outtake outtake;
 
-    public Cycler(Roadrunner rd, Intake intk, Outtake outk) {
+    public Cycler_1_Plus_10(Roadrunner rd, Intake intk, Outtake outk) {
         this.roadrunner = rd;
         this.intake = intk;
         this.outtake = outk;
@@ -41,6 +41,7 @@ public class Cycler {
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
+                    // latch cone
                     outtake.latchBarely();
                     intake.clawWide(); // now through gap, open claw wide
 
@@ -74,7 +75,7 @@ public class Cycler {
                     if (Thread.interrupted()) return;
 
                     // start arm
-                    intake.armStore();
+                    intake.armTransferAuto();
                     if (stackLayer != 5) {
                         waitSeconds(0.05);
                     } else { // top layer receives special treatment
@@ -85,12 +86,13 @@ public class Cycler {
                     if (Thread.interrupted()) return;
 
                     // pull back soon after
-                    intake.extenderTo(Intake.EXTENDER_TRANSFER_AUTO_POS + 20);
+                    intake.extenderTo(60); // TODO: Put this into the constant
 
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
                     // lower for transfer soon after
+                    intake.armTransferAuto();
                     intake.vslideTransferAuto();
 
                     waitSeconds(0.25);
@@ -99,13 +101,7 @@ public class Cycler {
                     // drop cone onto holder
                     intake.clawRelease();
 
-                    waitSeconds(0.3);
-                    if (Thread.interrupted()) return;
-
-                    // move claw out of the way
-                    intake.armStore();
-
-                    waitSeconds(0.01);
+                    waitSeconds(0.4);
                 })
                 .build();
     }
