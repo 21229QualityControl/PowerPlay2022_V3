@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.main.opmodes.autonomous;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.main.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
@@ -24,13 +26,21 @@ public class Cycler_1_Plus_10 {
                 .setKeepPosition(true)
                 .executeSync(() -> {
                     // move intake out
-                    intake.extenderTo(Intake.EXTENDER_BEFORE_STACK_POS);
+                    intake.extenderTo(Intake.EXTENDER_BEFORE_STACK_POS + 40);
                     intake.vslideLevel(stackLayer);
                     intake.armIntake();
                     intake.clawRelease(); // to go through gap
 
                     waitSeconds(0.01);
                     if (Thread.interrupted()) return;
+
+                    // reset slide encoder
+                    if (outtake.isSlideMagnetPresent()) {
+                        Log.d("Outtake", "Reset slide encoders from " + outtake.getSlidePosition());
+                        outtake.getSlide().zeroMotorInternals();
+                    } else {
+                        Log.d("Outtake", "Skipped slide encoder reset due to missing magnet");
+                    }
 
                     // raise up
                     outtake.armTiltOut();
@@ -43,7 +53,6 @@ public class Cycler_1_Plus_10 {
 
                     // latch cone
                     outtake.latchBarely();
-                    intake.clawWide(); // now through gap, open claw wide
 
                     waitSeconds(0.3);
                     if (Thread.interrupted()) return;
@@ -51,9 +60,14 @@ public class Cycler_1_Plus_10 {
                     // drop cone
                     outtake.latchOpen();
                     outtake.guideRetractDown();
-                    intake.extendCycle(); // extend intake out fully now
 
-                    waitSeconds(0.25);
+                    waitSeconds(0.15);
+                    if (Thread.interrupted()) return;
+
+                    // extend intake final while cone is dropping
+                    intake.extendCycle();
+
+                    waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
                     // raise down
@@ -65,7 +79,7 @@ public class Cycler_1_Plus_10 {
                     // grab next
                     intake.clawGrab();
 
-                    waitSeconds(0.3);
+                    waitSeconds(0.2);
                     if (Thread.interrupted()) return;
 
                     // lift off stack
@@ -77,11 +91,11 @@ public class Cycler_1_Plus_10 {
                     // start arm
                     intake.armTransferAuto();
                     if (stackLayer != 5) {
-                        waitSeconds(0.05);
+                        waitSeconds(0.15);
                     } else { // top layer receives special treatment
-                        waitSeconds(0.05);
+                        waitSeconds(0.10);
                         intake.extenderTo(intake.getExtenderTarget() - 80);
-                        waitSeconds(0.10); // wait extra for top layer
+                        waitSeconds(0.15); // wait extra for top layer
                     }
                     if (Thread.interrupted()) return;
 
@@ -95,13 +109,13 @@ public class Cycler_1_Plus_10 {
                     intake.armTransferAuto();
                     intake.vslideTransferAuto();
 
-                    waitSeconds(0.25);
+                    waitSeconds(0.2);
                     if (Thread.interrupted()) return;
 
                     // drop cone onto holder
                     intake.clawRelease();
 
-                    waitSeconds(0.4);
+                    waitSeconds(0.3);
                 })
                 .build();
     }
@@ -117,6 +131,14 @@ public class Cycler_1_Plus_10 {
                     waitSeconds(0.01);
                     if (Thread.interrupted()) return;
 
+                    // reset slide encoder
+                    if (outtake.isSlideMagnetPresent()) {
+                        Log.d("Outtake", "Reset slide encoders from " + outtake.getSlidePosition());
+                        outtake.getSlide().zeroMotorInternals();
+                    } else {
+                        Log.d("Outtake", "Skipped slide encoder reset due to missing magnet");
+                    }
+
                     // raise up
                     outtake.armTiltOut();
                     outtake.guideFlatOut();
@@ -126,6 +148,7 @@ public class Cycler_1_Plus_10 {
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
+                    // latch cone
                     outtake.latchBarely();
 
                     waitSeconds(0.3);
@@ -145,54 +168,6 @@ public class Cycler_1_Plus_10 {
                     outtake.armTransfer();
 
                     waitSeconds(0.4);
-                })
-                .build();
-    }
-
-    public TrajectorySequence grabAndTransfer(TrajectorySequenceBuilder builder, int stackLayer) {
-        return builder
-                .setKeepPosition(true)
-                .executeSync(() -> {
-                    // grab next
-                    intake.clawGrab();
-
-                    waitSeconds(0.3);
-                    if (Thread.interrupted()) return;
-
-                    // lift off stack
-                    intake.vslideLiftLevel(stackLayer);
-
-                    waitSeconds(0.2);
-                    if (Thread.interrupted()) return;
-
-                    // start arm
-                    intake.armStore();
-
-                    waitSeconds(0.1);
-                    if (Thread.interrupted()) return;
-
-                    // pull back soon after
-                    intake.extendStore();
-
-                    waitSeconds(0.2);
-                    if (Thread.interrupted()) return;
-
-                    intake.armTransferAuto();
-                    intake.vslideTransferAuto();
-
-                    waitSeconds(0.4);
-                    if (Thread.interrupted()) return;
-
-                    // drop cone onto holder
-                    intake.clawRelease();
-
-                    waitSeconds(0.1);
-                    if (Thread.interrupted()) return;
-
-                    // move claw out of the way
-                    intake.armStore();
-
-                    waitSeconds(0.01);
                 })
                 .build();
     }
