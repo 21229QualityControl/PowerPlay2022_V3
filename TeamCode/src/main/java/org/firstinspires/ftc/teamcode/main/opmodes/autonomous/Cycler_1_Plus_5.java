@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.main.opmodes.autonomous;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.main.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
@@ -32,6 +34,14 @@ public class Cycler_1_Plus_5 {
                     waitSeconds(0.01);
                     if (Thread.interrupted()) return;
 
+                    // reset slide encoder
+                    if (outtake.isSlideMagnetPresent()) {
+                        Log.d("Outtake", "Reset slide encoders from " + outtake.getSlidePosition());
+                        outtake.getSlide().zeroMotorInternals();
+                    } else {
+                        Log.d("Outtake", "Skipped slide encoder reset due to missing magnet");
+                    }
+
                     // raise up
                     outtake.armTiltOut();
                     outtake.guideFlatOut();
@@ -51,9 +61,14 @@ public class Cycler_1_Plus_5 {
                     // drop cone
                     outtake.latchOpen();
                     outtake.guideRetractDown();
-                    intake.extendCycle(); // extend intake out fully now
 
-                    waitSeconds(0.25);
+                    waitSeconds(0.15);
+                    if (Thread.interrupted()) return;
+
+                    // extend intake final while cone is dropping
+                    intake.extendCycle();
+
+                    waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
                     // raise down
@@ -77,11 +92,11 @@ public class Cycler_1_Plus_5 {
                     // start arm
                     intake.armTransferAuto();
                     if (stackLayer != 5) {
-                        waitSeconds(0.05);
+                        waitSeconds(0.20);
                     } else { // top layer receives special treatment
-                        waitSeconds(0.05);
+                        waitSeconds(0.10);
                         intake.extenderTo(intake.getExtenderTarget() - 80);
-                        waitSeconds(0.10); // wait extra for top layer
+                        waitSeconds(0.20); // wait extra for top layer
                     }
                     if (Thread.interrupted()) return;
 
@@ -95,7 +110,7 @@ public class Cycler_1_Plus_5 {
                     intake.armTransferAuto();
                     intake.vslideTransferAuto();
 
-                    waitSeconds(0.25);
+                    waitSeconds(0.3);
                     if (Thread.interrupted()) return;
 
                     // drop cone onto holder
@@ -117,6 +132,14 @@ public class Cycler_1_Plus_5 {
                     waitSeconds(0.01);
                     if (Thread.interrupted()) return;
 
+                    // reset slide encoder
+                    if (outtake.isSlideMagnetPresent()) {
+                        Log.d("Outtake", "Reset slide encoders from " + outtake.getSlidePosition());
+                        outtake.getSlide().zeroMotorInternals();
+                    } else {
+                        Log.d("Outtake", "Skipped slide encoder reset due to missing magnet");
+                    }
+
                     // raise up
                     outtake.armTiltOut();
                     outtake.guideFlatOut();
@@ -126,6 +149,7 @@ public class Cycler_1_Plus_5 {
                     waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
+                    // latch cone
                     outtake.latchBarely();
 
                     waitSeconds(0.3);
@@ -186,13 +210,7 @@ public class Cycler_1_Plus_5 {
                     // drop cone onto holder
                     intake.clawRelease();
 
-                    waitSeconds(0.1);
-                    if (Thread.interrupted()) return;
-
-                    // move claw out of the way
-                    intake.armStore();
-
-                    waitSeconds(0.01);
+                    waitSeconds(0.4);
                 })
                 .build();
     }

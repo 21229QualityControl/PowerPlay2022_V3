@@ -27,7 +27,7 @@ public class Intake {
     public static int EXTENDER_STORED_POS = 0;
     public static int EXTENDER_CYCLE_TELEOP_POS = 530;
     public static int EXTENDER_BEFORE_CYCLE_TELEOP_POS = 300;
-    public static int EXTENDER_CYCLE_POS = 580; // 580 for auto
+    public static int EXTENDER_CYCLE_POS = 540;
     public static int EXTENDER_BEFORE_STACK_POS = 460;
     public static int EXTENDER_TRANSFER_AUTO_POS = 70;
 
