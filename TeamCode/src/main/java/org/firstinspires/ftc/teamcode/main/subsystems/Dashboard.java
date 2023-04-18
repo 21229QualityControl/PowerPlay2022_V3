@@ -18,6 +18,7 @@ public class Dashboard {
    private static FtcDashboard dashboard = null;
 
    public static boolean DISABLE_DASHBOARD = true;
+   public static boolean DISABLE_CANVAS = true;
 
    public static void setUp() {
       dashboard = FtcDashboard.getInstance();

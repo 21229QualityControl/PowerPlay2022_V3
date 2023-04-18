@@ -279,10 +279,12 @@ public class TrajectorySequenceRunner {
                 packet.put("ωVelTarget", driveSignal.getVel().getHeading());
             }
 
-            draw(fieldOverlay, currentTrajectorySequence, currentSegment, targetPose, poseEstimate);
+            if (!Dashboard.DISABLE_CANVAS) {
+                draw(fieldOverlay, currentTrajectorySequence, currentSegment, targetPose, poseEstimate);
 
-            if (!dashboardConsumers.isEmpty()) {
-                dashboardConsumers.forEach(canvasConsumer -> canvasConsumer.accept(fieldOverlay));
+                if (!dashboardConsumers.isEmpty()) {
+                    dashboardConsumers.forEach(canvasConsumer -> canvasConsumer.accept(fieldOverlay));
+                }
             }
             if (!packetConsumers.isEmpty()) {
                 packetConsumers.forEach(packetConsumer -> packetConsumer.accept(packet));
