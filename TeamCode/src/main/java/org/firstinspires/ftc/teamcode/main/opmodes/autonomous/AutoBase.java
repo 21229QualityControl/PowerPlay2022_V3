@@ -34,7 +34,6 @@ public abstract class AutoBase extends LinearOpMode {
     protected Hub hub;
     protected Intake intake;
     protected Outtake outtake;
-    protected Cycler auto;
     protected Vision vision;
     protected LED led;
 
@@ -73,7 +72,6 @@ public abstract class AutoBase extends LinearOpMode {
         this.rr = new Roadrunner(hardwareMap,hub, drivetrain);
         this.intake = new Intake(hardwareMap);
         this.outtake = new Outtake(hardwareMap);
-        this.auto = new Cycler_1_Plus_5(this.rr, this.intake, this.outtake);
         Memory.REMEMBERED_OUTTAKE = this.outtake;
         this.vision = new Vision(hardwareMap);
         this.led = new LED(hardwareMap);
@@ -186,6 +184,14 @@ public abstract class AutoBase extends LinearOpMode {
         // prepare park police
         parker.resetController();
         parker.maintainPosition(StateCopyLocalizer.pose);
+
+        // reset slide encoder
+        if (outtake.isSlideMagnetPresent()) {
+            Log.d("Outtake", "Reset slide encoders from " + outtake.getSlidePosition());
+            outtake.getSlide().zeroMotorInternals();
+        } else {
+            Log.d("Outtake", "Skipped slide encoder reset due to missing magnet");
+        }
 
         // run user end
         onEnd();
@@ -326,6 +332,9 @@ public abstract class AutoBase extends LinearOpMode {
      */
     protected void update() {
         Dashboard.packet.put("Runtime", getRuntime());
+        Dashboard.packet.put("Turret angle", outtake.getTurretAngle());
+        Dashboard.packet.put("Turret target", outtake.getTurretTarget());
+        Dashboard.packet.put("Turret power", outtake.getTurretPower());
         telemetry.addData("Time left", 30 - getRuntime());
         telemetry.addData("Runtime", getRuntime());
         telemetry.update();

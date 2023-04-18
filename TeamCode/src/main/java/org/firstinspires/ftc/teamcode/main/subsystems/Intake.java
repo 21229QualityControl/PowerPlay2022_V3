@@ -21,18 +21,19 @@ public class Intake {
     public static final double EXTENDER_TICKS_PER_REV = ((1+(46.0/11.0)) * 28);
     public static final double EXTENDER_SPOOL_CIRCUMFERENCE = 112 / 25.4; // 112mm
     public static PIDFCoefficients EXTENDER_VEL_PIDF = new PIDFCoefficients(23, 0.005, 5, 0.0);
-    public static double EXTENDER_POS_P = 25;
+    public static double EXTENDER_POS_P = 23;
     private static int EXTENDER_MIN = 0;
     private static int EXTENDER_MAX = 1050; // 1080 is technically the max
     public static int EXTENDER_STORED_POS = 0;
     public static int EXTENDER_CYCLE_TELEOP_POS = 530;
     public static int EXTENDER_BEFORE_CYCLE_TELEOP_POS = 300;
-    public static int EXTENDER_CYCLE_POS = 540;
-    public static int EXTENDER_BEFORE_STACK_POS = 460;
-    public static int EXTENDER_TRANSFER_AUTO_POS = 70;
+    public static int EXTENDER_CYCLE_POS = 560;
+    public static int EXTENDER_BEFORE_STACK_POS = 500;
+    public static int EXTENDER_TRANSFER_AUTO_POS = 55;
 
     private static double ARM_MIN = 0.137;
     private static double ARM_MAX = 0.585;
+    public static double ARM_PARKING_POS = 0.22; // Arm inside robot, slightly angled in
     public static double ARM_STORED_POS = 0.240; // Arm as vertical as possible (without blocking outtake)
     public static double ARM_INTAKING_POS = 0.554; // Claw leveled
     public static double ARM_TRANSFER_POS = 0.22;
@@ -132,6 +133,9 @@ public class Intake {
     }
     public void armAngledDeposit() {
         this.arm.setPosition(ARM_ANGLED_DEPOSIT_POS);
+    }
+    public void armPark() {
+        this.arm.setPosition(ARM_PARKING_POS);
     }
     public double getArmPosition() {
         return this.arm.getPosition();

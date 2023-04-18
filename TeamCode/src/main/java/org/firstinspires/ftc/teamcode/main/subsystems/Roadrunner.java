@@ -52,7 +52,7 @@ public class Roadrunner extends MecanumDrive {
 
     public static PIDCoefficients KEEP_POSITION_TRANSLATIONAL_PID = new PIDCoefficients(10, 0.5, 0);
     public static PIDCoefficients KEEP_POSITION_HEADING_PID = new PIDCoefficients(11, 0.5, 0);
-    public static CPose2d KEEP_POSITION_TOLERANCE = new CPose2d(0.5, 0.5, Math.toRadians(2.0));
+    public static CPose2d KEEP_POSITION_TOLERANCE = new CPose2d(0.25, 0.25, Math.toRadians(0.5)); // realistically cannot stay in this range
 
     public static double LATERAL_MULTIPLIER = 1.72; // reality/expected for strafing effort
 

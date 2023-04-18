@@ -14,9 +14,9 @@ import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
 @Autonomous(name = "🔵 ◢ Blue Right Auto Shared 1+5", group = "Auto Shared 1+5", preselectTeleOp = "Manual Drive")
-public class AutoBlueRight_Shared_1_Plus_5 extends AutoBase {
-    public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.blueRightConeStack.plus(new Vector2d(26, -1)), Math.toRadians(180));
-    public static double TURRET_ANGLE = -49;
+public class AutoBlueRight_Shared_1_Plus_5 extends AutoBase { // WARNING: Offset should be +1 to push closer to drivers
+    public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.blueRightConeStack.plus(new Vector2d(33, -1)), Math.toRadians(180));
+    public static double TURRET_ANGLE = -51;
 
     private Cycler_1_Plus_5 cycleManager;
 
@@ -33,6 +33,7 @@ public class AutoBlueRight_Shared_1_Plus_5 extends AutoBase {
     @Override
     protected void printDescription() {
         telemetry.addData("Description", "🔵⌊    ◢⌋ Shared 1+5 and park");
+        telemetry.addData("Reminder", "This auto has been offset 1 inch closer to the drivers");
     }
 
     @Override
@@ -66,7 +67,10 @@ public class AutoBlueRight_Shared_1_Plus_5 extends AutoBase {
         Log.d("Autonomous", String.format("moveToJunction() Start %.3f", getRuntime()));
         follow(builder()
                 .lineTo(new Vector2d(getStartPose().getX(), CYCLE_POSITION.getY()))
-                .lineToSplineHeading(CYCLE_POSITION.asPose2d())
+                .turnTo(CYCLE_POSITION.getHeading())
+                .setKeepPosition(true)
+                .waitSeconds(0.1)
+                .waitForCondition(() -> !rr.isPositionMaintainerBusy(), 100)
                 .build());
 
         Log.d("Autonomous", String.format("moveToJunction() Ended %.3f", getRuntime()));
@@ -75,20 +79,25 @@ public class AutoBlueRight_Shared_1_Plus_5 extends AutoBase {
     private void park() {
         Log.d("Autonomous", String.format("park() Start %.3f", getRuntime()));
         outtake.setTurretAngle(0);
+        outtake.store();
+        intake.armPark();
+        intake.extendStore();
+        intake.clawClosed();
+        intake.vslideLevel(3); // in case there's something in the intake
         switch (SIGNAL) {
             case 1:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(3, 2).plus(new Vector2d(-0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(3, 2).plus(new Vector2d(-0.5, -1)))
                         .build());
                 break;
             default:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(4, 2).plus(new Vector2d(-0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(4, 2).plus(new Vector2d(-0.5, -1)))
                         .build());
                 break;
             case 3:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(5, 2).plus(new Vector2d(-2)))
+                        .strafeTo(FieldConstants.getSquareCenter(5, 2).plus(new Vector2d(-2, -1)))
                         .build());
                 break;
         }

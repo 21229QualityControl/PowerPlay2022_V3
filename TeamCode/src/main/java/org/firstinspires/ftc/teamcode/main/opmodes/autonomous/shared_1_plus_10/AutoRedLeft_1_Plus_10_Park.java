@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.main.environment.FieldConstants;
 import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.AutoBase;
@@ -13,12 +14,13 @@ import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.Cycler_1_Plus_10;
 import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
-@Autonomous(name = "🔴 ◢ Red Right Auto 1+10", group = "Auto 1+10", preselectTeleOp = "Manual Drive")
-public class AutoRedRight_1_Plus_10_Park extends AutoBase {
-    public static CPose2d CYCLE_POSITION =        new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-33, 0)), Math.toRadians(0));
-    public static CPose2d SECOND_CYCLE_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(33, 0)), Math.toRadians(180));
-    public static double TURRET_ANGLE = -51;
-    public static double SECOND_TURRET_ANGLE = 51;
+@Disabled
+@Autonomous(name = "🔴 ◣ Red Left Auto 1+10", group = "Auto 1+10", preselectTeleOp = "Manual Drive")
+public class AutoRedLeft_1_Plus_10_Park extends AutoBase {
+    public static CPose2d CYCLE_POSITION =        new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(33, -1)), Math.toRadians(180));
+    public static CPose2d SECOND_CYCLE_POSITION = new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-33, -3)), Math.toRadians(0));
+    public static double TURRET_ANGLE = 51;
+    public static double SECOND_TURRET_ANGLE = -51;
 
     private Cycler_1_Plus_10 cycleManager;
 
@@ -29,12 +31,13 @@ public class AutoRedRight_1_Plus_10_Park extends AutoBase {
 
     @Override
     protected Pose2d getStartPose() {
-        return FieldConstants.redRightStartingPosition;
+        return FieldConstants.redLeftStartingPosition;
     }
 
     @Override
     protected void printDescription() {
-        telemetry.addData("Description", "🔴⌊    ◢⌋ 1+10 and park");
+        telemetry.addData("Description", "🔴⌊◣    ⌋ 1+10 and park");
+        telemetry.addData("Reminder", "THIS AUTO SHOULD NOT BE USED. Weird offsets of 1 and 3.");
     }
 
     @Override
@@ -123,7 +126,7 @@ public class AutoRedRight_1_Plus_10_Park extends AutoBase {
         switch (SIGNAL) {
             case 1:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(5, 3).plus(new Vector2d(0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(2, 3).plus(new Vector2d(0.5, -3)))
                         .build());
                 break;
             default:
@@ -131,12 +134,12 @@ public class AutoRedRight_1_Plus_10_Park extends AutoBase {
                         .addIterative("Emergency brake", () -> {
                             if (getRuntime() > 29.5) rr.forceStopTrajectory();
                         })
-                        .strafeTo(FieldConstants.getSquareCenter(4, 3).plus(new Vector2d(0.5)))
+                        .strafeTo(FieldConstants.getSquareCenter(1, 3).plus(new Vector2d(0.5, -3)))
                         .build());
                 break;
             case 3:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(3, 3).plus(new Vector2d(2)))
+                        .strafeTo(FieldConstants.getSquareCenter(0, 3).plus(new Vector2d(2, -3)))
                         .build());
                 break;
         }

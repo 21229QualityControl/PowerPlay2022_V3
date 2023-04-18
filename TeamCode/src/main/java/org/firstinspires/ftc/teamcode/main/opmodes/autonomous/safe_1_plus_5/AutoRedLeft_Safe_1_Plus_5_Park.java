@@ -16,9 +16,9 @@ import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 @Config
 @Autonomous(name = "🔴 ◣ Red Left Auto Safe 1+5", group = "Auto Safe 1+5", preselectTeleOp = "Manual Drive")
 public class AutoRedLeft_Safe_1_Plus_5_Park extends AutoBase {
-    public static CPose2d SCORING_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(60, -1)), Math.toRadians(180));
+    public static CPose2d SCORING_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(57, -1)), Math.toRadians(180));
     public static CPose2d INTAKING_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(46, -1)), Math.toRadians(180));
-    public static double TURRET_ANGLE = -55;
+    public static double TURRET_ANGLE = -51;
     public static int EXTENDER_TICKS = 1030;
 
     @Override
@@ -138,7 +138,7 @@ public class AutoRedLeft_Safe_1_Plus_5_Park extends AutoBase {
                     if (Thread.interrupted()) return;
 
                     // pull back soon after
-                    intake.extenderTo(60);
+                    intake.extendTransferAuto();
 
                     waitSecondsSimple(0.2);
                     if (Thread.interrupted()) return;
@@ -161,7 +161,7 @@ public class AutoRedLeft_Safe_1_Plus_5_Park extends AutoBase {
         Log.d("Autonomous", String.format("park() Start %.3f", getRuntime()));
         outtake.setTurretAngle(0);
         outtake.store();
-        intake.armStore();
+        intake.armPark();
         intake.extendStore();
         intake.clawClosed();
         intake.vslideLevel(3); // in case there's something in the intake

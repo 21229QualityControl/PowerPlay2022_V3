@@ -2,12 +2,15 @@ package org.firstinspires.ftc.teamcode.main.opmodes.autonomous;
 
 import android.util.Log;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.main.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class Cycler_1_Plus_10 {
@@ -25,15 +28,6 @@ public class Cycler_1_Plus_10 {
         return builder
                 .setKeepPosition(true)
                 .executeSync(() -> {
-                    // move intake out
-                    intake.extenderTo(Intake.EXTENDER_BEFORE_STACK_POS + 40);
-                    intake.vslideLevel(stackLayer);
-                    intake.armIntake();
-                    intake.clawRelease(); // to go through gap
-
-                    waitSeconds(0.01);
-                    if (Thread.interrupted()) return;
-
                     // reset slide encoder
                     if (outtake.isSlideMagnetPresent()) {
                         Log.d("Outtake", "Reset slide encoders from " + outtake.getSlidePosition());
@@ -54,7 +48,16 @@ public class Cycler_1_Plus_10 {
                     // latch cone
                     outtake.latchBarely();
 
-                    waitSeconds(0.3);
+                    waitSeconds(0.1);
+                    if (Thread.interrupted()) return;
+
+                    // move intake out
+                    intake.extenderTo(Intake.EXTENDER_BEFORE_STACK_POS);
+                    intake.vslideLevel(stackLayer);
+                    intake.armIntake();
+                    intake.clawRelease(); // to go through gap
+
+                    waitSeconds(0.2);
                     if (Thread.interrupted()) return;
 
                     // drop cone
@@ -100,16 +103,16 @@ public class Cycler_1_Plus_10 {
                     if (Thread.interrupted()) return;
 
                     // pull back soon after
-                    intake.extenderTo(60); // TODO: Put this into the constant
+                    intake.extendTransferAuto();
 
-                    waitSeconds(0.1);
+                    waitForCondition(() -> intake.getExtenderPosition() < 55, 0.1);
                     if (Thread.interrupted()) return;
 
                     // lower for transfer soon after
                     intake.armTransferAuto();
                     intake.vslideTransferAuto();
 
-                    waitSeconds(0.2);
+                    waitSeconds(0.3);
                     if (Thread.interrupted()) return;
 
                     // drop cone onto holder
@@ -124,13 +127,6 @@ public class Cycler_1_Plus_10 {
         return builder
                 .setKeepPosition(true)
                 .executeSync(() -> {
-                    // move intake out of the way
-                    intake.armStore();
-                    intake.clawRelease(); // to go through gap
-
-                    waitSeconds(0.01);
-                    if (Thread.interrupted()) return;
-
                     // reset slide encoder
                     if (outtake.isSlideMagnetPresent()) {
                         Log.d("Outtake", "Reset slide encoders from " + outtake.getSlidePosition());
@@ -177,6 +173,19 @@ public class Cycler_1_Plus_10 {
             Thread.sleep((long) (seconds * 1000));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // Preserve interrupted status
+        }
+    }
+
+    private void waitForCondition(BooleanSupplier condition, double timeoutSeconds) {
+        ElapsedTime timeout = new ElapsedTime();
+        while (!condition.getAsBoolean() && timeout.seconds() > timeoutSeconds) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Preserve interrupted status
+                return;
+            }
+            Thread.yield();
         }
     }
 }

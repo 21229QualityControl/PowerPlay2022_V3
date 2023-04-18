@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.util.hardware.MagnetSwitchSensor;
 @Config
 public class Outtake {
     private final double TURRET_TICKS_PER_REV = ((((1+(46.0/17.0))) * (1+(46.0/17.0))) * 28) * (68.0/10.0); // Goes through 435 RPM motor and then 68T/10T gear ratio
-    public static PIDCoefficients TURRET_PID = new PIDCoefficients(0.007, 0, 0.0003);
+    public static PIDCoefficients TURRET_PID = new PIDCoefficients(0.006, 0, 0.0003); // was previously P=0.007
     private static double TURRET_MIN = -90; // TODO: Tune
     private static double TURRET_MAX = 90; // TODO: Tune
     public static int TURRET_CENTER = 0; // Initialize with turret centered
@@ -166,6 +166,7 @@ public class Outtake {
         this.slide.setTargetPosition(Range.clip(ticks, SLIDE_MIN, SLIDE_MAX));
     }
     public void slideStore() {
+        Log.d("Outtake", "Slide lowered from " + getSlidePosition() + ", the prev target was " + getSlideTarget());
         slide.setTargetPosition(SLIDE_STORED);
     }
     public void slideLow() {
@@ -204,6 +205,7 @@ public class Outtake {
         turret.setAngle(TURRET_LEFT);
     }
     public void turretCenter() {
+        Log.d("Outtake", "Turret centered from " + getTurretAngle() + ", the prev target was " + getTurretTarget());
         turret.setAngle(TURRET_CENTER);
     }
     public void turretRight() {
