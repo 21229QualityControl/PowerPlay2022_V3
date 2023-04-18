@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.util.hardware;
 
+import android.util.Log;
+
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.Range;
 
 import kotlin.jvm.functions.Function2;
 
@@ -15,7 +18,7 @@ public class MotorWithPID {
     private int targetPosition = 0;
     private int internalOffset = 0;
     private int tolerance = 5;
-    private double maxPower = 1e-8; // zero does not work
+    private double maxPower = 0;
 
     public MotorWithPID(DcMotorEx motor, PIDCoefficients pid) {
         this(motor, pid, (x, v) -> 0.0);
@@ -25,7 +28,6 @@ public class MotorWithPID {
         this.motor = motor;
         this.pid = pid;
         this.pidfController = new PIDFController(pid, 0, 0, 0, f);
-        this.pidfController.setOutputBounds(-maxPower, maxPower);
 
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
@@ -38,7 +40,17 @@ public class MotorWithPID {
      * Updates the power sent to the motor according to the pidf controller.
      */
     public void update() {
-        double newPower = this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity());
+        double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()), -maxPower, maxPower);
+//        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
+        motor.setPower(newPower);
+    }
+
+    /**
+     * Updates the power sent to the motor according to the pidf controller,
+     * but scale pid output with a current and target voltage
+     */
+    public void update(double currentVoltage, double targetVoltage) {
+        double newPower = Range.clip(this.pidfController.update(motor.getCurrentPosition(), motor.getVelocity()) * targetVoltage / currentVoltage, -maxPower, maxPower);
 //        Log.d("MotorWithPID", "newPower " + newPower + ", lastError " + pidfController.getLastError());
         motor.setPower(newPower);
     }
@@ -94,8 +106,8 @@ public class MotorWithPID {
     }
 
     /**
-     * Returns the current target positioning tolerance of this motor
-     * @return the current target positioning tolerance of this motor
+     * Returns the current target encoder position for this motor.
+     * @return the current target encoder position for this motor.
      */
     public int getTargetPosition() {
         return targetPosition;
@@ -115,7 +127,6 @@ public class MotorWithPID {
      */
     public void setMaxPower(double maxPower) {
         this.maxPower = Math.abs(maxPower);
-        this.pidfController.setOutputBounds(-this.maxPower, this.maxPower);
     }
 
     /**
