@@ -17,9 +17,17 @@ import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 //@Disabled
 @TeleOp(group = "Test")
 public class TransferTest extends LinearOpMode {
+    public static double TRANSFER_INTAKE_ARM = Intake.ARM_TRANSFER_AUTO_POS;
+    public static int TRANSFER_INTAKE_EXTENSION = Intake.EXTENDER_TRANSFER_AUTO_POS;
+    public static double TRANSFER_INTAKE_VSLIDE = Intake.VSLIDE_TRANSFER_AUTO_POS;
+    public static double TRANSFER_OUTTAKE_ARM = Outtake.ARM_TRANSFER_AUTO_POS;
 
-    Intake intake;
-    Outtake outtake;
+    public static int TESTING_INTAKE_EXTENSION = Intake.EXTENDER_CYCLE_POS;
+    public static double TESTING_INTAKE_ARM = Intake.ARM_INTAKING_POS;
+    public static double TESTING_INTAKE_VSLIDE = Intake.VSLIDE_LVL1_POS;
+
+    private Intake intake;
+    private Outtake outtake;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -33,6 +41,11 @@ public class TransferTest extends LinearOpMode {
 
         intake.getExtender().zeroMotorInternals();
         outtake.getSlide().zeroMotorInternals();
+
+        intake.clawRelease();
+        intake.armStore();
+        intake.vslideLevel(1);
+        outtake.armTransferAuto();
 
         // Create our controller interface
         GamePadController g1 = new GamePadController(gamepad1);
@@ -48,11 +61,11 @@ public class TransferTest extends LinearOpMode {
             g1.update();
 
             if (g1.bOnce()) { // reset
-                intake.extenderTo(200);
-                intake.armIntake();
-                intake.vslideDown();
+                intake.extenderTo(TESTING_INTAKE_EXTENSION);
+                intake.setArmPosition(TESTING_INTAKE_ARM);
+                intake.setVSlidePosition(TESTING_INTAKE_VSLIDE);
                 intake.clawRelease();
-                outtake.armTransferAuto();
+                outtake.setArmPosition(TRANSFER_OUTTAKE_ARM);
                 outtake.latchOpen();
             }
 
@@ -61,18 +74,17 @@ public class TransferTest extends LinearOpMode {
                 else intake.clawRelease();
             }
 
-            // Move back
+            // Transfer
             if (g1.xOnce()) {
-                intake.extendTransferAuto();
-                intake.vslideTransferAuto();
+                outtake.setArmPosition(TRANSFER_OUTTAKE_ARM);
+                intake.extenderTo(TRANSFER_INTAKE_EXTENSION);
+                intake.setArmPosition(TRANSFER_INTAKE_ARM);
+                intake.setVSlidePosition(TRANSFER_INTAKE_VSLIDE);
             }
 
-            // Transfer
+            // Drop
             if (g1.yOnce()) {
-                outtake.armTransferAuto();
-                intake.extendTransferAuto();
-                intake.vslideTransferAuto();
-                intake.armTransferAuto();
+                intake.clawRelease();
             }
 
             // Update extender PID
