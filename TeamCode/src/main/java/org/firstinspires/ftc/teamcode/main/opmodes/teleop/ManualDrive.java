@@ -133,9 +133,7 @@ public class ManualDrive extends LinearOpMode {
         auto = new Cycler_1_Plus_5(roadrunner, intake, outtake);
 
         drivetrain.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intake.initialize();
-        outtake.initialize();
-        outtake.setTurretAngle(0);
+        if (outtake.isSlideMagnetPresent()) outtake.getSlide().zeroMotorInternals();
 
         autoTransferTimer = new ElapsedTime();
 
@@ -189,6 +187,10 @@ public class ManualDrive extends LinearOpMode {
                 intake.getExtender().zeroMotorInternals();
                 intake.getExtender().getMotor().setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
+
+            intake.initialize();
+            outtake.initialize();
+
             smartGameTimer.resetIfStandard();
         }
 
