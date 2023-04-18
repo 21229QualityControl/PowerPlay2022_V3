@@ -327,12 +327,18 @@ public class ManualDrive extends LinearOpMode {
                     intake.setExtenderMaxPower(0.6);
                     intake.extendCycleTeleop();
                     intake.armIntake();
+                    if (!intake.isClawOpen()) {
+                        intake.clawRelease();
+                        delayClawWide();
+                    }
                 } else { // Pre-extend if somehow didn't
                     intake.armIntake();
                     intake.setExtenderMaxPower(0.6);
                     if (intake.getExtenderTarget() < 50) intake.extenderTo(Intake.EXTENDER_BEFORE_CYCLE_TELEOP_POS);
-                    intake.clawRelease();
-                    delayClawWide();
+                    if (!intake.isClawOpen()) {
+                        intake.clawRelease();
+                        delayClawWide();
+                    }
                 }
             } else {
                 if (intake.isArmOut()) { // Go Storage
@@ -384,14 +390,20 @@ public class ManualDrive extends LinearOpMode {
             stacknum = Range.clip(stacknum, 1, 5);
 
             if (extendIntake) { // will prepare for auto-cycle only when extending out
-                intake.clawRelease();
-                delayClawWide();
+                if (!intake.isClawOpen()) {
+                    intake.clawRelease();
+                    delayClawWide();
+                }
                 intake.setExtenderMaxPower(0.6);
                 intake.extendCycleTeleop();
                 intake.armIntake();
             }
             intake.vslideLevel(stacknum);
             autoTransferTimer.reset();
+        } else if (g1.dpadRightOnce()) {
+            if (intake.isArmOut() && intake.isVSlideUp()) {
+                intake.vslideLiftLevel(stacknum);
+            }
         }
 
         // Auto stack cycle
@@ -407,8 +419,10 @@ public class ManualDrive extends LinearOpMode {
                 intake.armIntake();
                 intake.setExtenderMaxPower(0.6);
                 if (intake.getExtenderTarget() < 50) intake.extenderTo(Intake.EXTENDER_BEFORE_CYCLE_TELEOP_POS);
-                intake.clawRelease();
-                delayClawWide();
+                if (!intake.isClawOpen()) {
+                    intake.clawRelease();
+                    delayClawWide();
+                }
             } else {
                 if (intake.isArmBlockingOuttake()) intake.armStore();
             }
@@ -425,8 +439,10 @@ public class ManualDrive extends LinearOpMode {
                 intake.armIntake();
                 intake.setExtenderMaxPower(0.6);
                 if (intake.getExtenderTarget() < 50) intake.extenderTo(Intake.EXTENDER_BEFORE_CYCLE_TELEOP_POS);
-                intake.clawRelease();
-                delayClawWide();
+                if (!intake.isClawOpen()) {
+                    intake.clawRelease();
+                    delayClawWide();
+                }
             } else {
                 if (intake.isArmBlockingOuttake()) intake.armStore();
             }
@@ -497,17 +513,15 @@ public class ManualDrive extends LinearOpMode {
         double slideStick = -g2.left_stick_y;
         if (Math.abs(slideStick) < 0.01) { // if stick not engaged, use PID
             outtake.enableOuttakePID();
-        } else if (slideStick < 0 && outtake.getSlidePosition() <= 10) { // if forcing down, target bottom
-            outtake.disableOuttakePID();
-            outtake.setOuttakeOverridePower(-0.2);
-            outtake.turretCenter(); // center turret when too low
-            scheduleSlideEncoderReset = true;
-        } else { // if stick is engaged and not forcing down, apply manual power
+        } else { // if stick is engaged, apply manual power
             outtake.disableOuttakePID();
             outtake.setOuttakeOverridePower(Math.pow(slideStick, 3) * 0.75);
             raisedTurretAngle = outtake.getTurretAngle();
             if (outtake.getSlidePosition() < 80) { // center turret if too low
                 outtake.turretCenter();
+            }
+            if (outtake.isSlideMagnetPresent()) {
+                outtake.getSlide().zeroMotorInternals(); // directly reset
             }
         }
 
