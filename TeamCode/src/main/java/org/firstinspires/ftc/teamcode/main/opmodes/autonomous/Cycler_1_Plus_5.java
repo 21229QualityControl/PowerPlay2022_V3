@@ -108,14 +108,18 @@ public class Cycler_1_Plus_5 {
                     // pull back soon after
                     intake.extendTransferAuto();
 
-                    waitForCondition(() -> intake.getExtenderPosition() < 55, 0.1);
+                    waitSeconds(0.1);
                     if (Thread.interrupted()) return;
 
                     // lower for transfer soon after
                     intake.armTransferAuto();
                     intake.vslideTransferAuto();
 
-                    waitSeconds(0.3);
+                    waitForCondition(() -> {
+                        int pos = intake.getExtenderPosition();
+                        Log.d("WaitForCondition", "pos " + pos);
+                        return pos < 55;
+                    }, 0.4);
                     if (Thread.interrupted()) return;
 
                     // drop cone onto holder
@@ -229,14 +233,22 @@ public class Cycler_1_Plus_5 {
 
     private void waitForCondition(BooleanSupplier condition, double timeoutSeconds) {
         ElapsedTime timeout = new ElapsedTime();
-        while (!condition.getAsBoolean() && timeout.seconds() > timeoutSeconds) {
-            try {
+        try {
+            while (true) {
+                if (condition.getAsBoolean()) {
+                    Log.d("WaitForCondition", "fulfilled condition at time " + timeout.seconds());
+                    return;
+                } else if (timeout.seconds() > timeoutSeconds) {
+                    Log.d("WaitForCondition", "timed out");
+                    return;
+                }
                 Thread.sleep(10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); // Preserve interrupted status
-                return;
+                Thread.yield();
             }
-            Thread.yield();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Preserve interrupted status
+            Log.d("WaitForCondition", "interrupted");
+            return;
         }
     }
 }
