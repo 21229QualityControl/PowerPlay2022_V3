@@ -82,13 +82,18 @@ public class AutoBlueRight_1_Plus_10_Park extends AutoBase {
 
     private void moveToJunction() {
         Log.d("Autonomous", String.format("moveToJunction() Start %.3f", getRuntime()));
-        follow(builder()
+        follow(builder(getStartPose())
                 .lineTo(new Vector2d(getStartPose().getX(), CYCLE_POSITION.getY()))
-                .turnTo(CYCLE_POSITION.getHeading())
+                .turn(Math.toRadians(90 + 13.0))
+                .build());
+        Log.d("Roadrunner", "Pose before keep pos: " + rr.getPoseEstimate());
+        follow (builder(CYCLE_POSITION.asPose2d())
                 .setKeepPosition(true)
                 .waitSeconds(0.1)
                 .waitForCondition(() -> !rr.isPositionMaintainerBusy(), 100)
                 .build());
+
+        Log.d("Roadrunner", "Pose at junction: " + rr.getPoseEstimate());
 
         Log.d("Autonomous", String.format("moveToJunction() Ended %.3f", getRuntime()));
     }
