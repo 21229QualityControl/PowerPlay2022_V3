@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.main.environment.FieldConstants;
 import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.main.opmodes.autonomous.Cycler_1_Plus_5;
+import org.firstinspires.ftc.teamcode.main.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.main.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
@@ -80,7 +82,8 @@ public class AutoRedLeft_Shared_1_Plus_5 extends AutoBase {
         Log.d("Autonomous", String.format("park() Start %.3f", getRuntime()));
         outtake.setTurretAngle(0);
         outtake.store();
-        intake.armPark();
+        outtake.setArmPosition(Outtake.ARM_TRANSFER + 0.04);
+        intake.setArmPosition(Intake.ARM_PARKING_POS - 0.02);
         intake.extendStore();
         intake.clawClosed();
         intake.vslideLevel(3); // in case there's something in the intake
