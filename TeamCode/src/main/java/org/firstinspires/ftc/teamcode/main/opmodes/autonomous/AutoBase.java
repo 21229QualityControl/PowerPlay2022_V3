@@ -211,12 +211,16 @@ public abstract class AutoBase extends LinearOpMode {
             // call user end loop
             onEndLoop();
 
+            if (intake.getExtender().getMotor().isOverCurrent()) intake.setExtenderMaxPower(0);
+
+            intake.update();
             outtake.update();
             telemetry.update();
         } while (opModeIsActive() && !isStopRequested());
 
         // Ensure motors are stopped
         rr.setMotorPowers(0, 0, 0, 0);
+        intake.getExtender().stopMotor();
         outtake.getTurret().stopMotor();
         outtake.getSlide().stopMotor();
         rr.forceStopTrajectory();

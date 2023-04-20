@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.util.hardware.HardwareCreator;
 import org.firstinspires.ftc.teamcode.util.hardware.MotorWithRunToPositionPID;
 
@@ -70,6 +71,7 @@ public class Intake {
         this.vslide = HardwareCreator.createServo(hardwareMap, "intakeVSlide", HardwareCreator.ServoType.AXON);
 
         this.extender.setMaxPower(0.9);
+        this.extender.getMotor().setCurrentAlert(8000, CurrentUnit.MILLIAMPS);
     }
 
     public void initialize() {
