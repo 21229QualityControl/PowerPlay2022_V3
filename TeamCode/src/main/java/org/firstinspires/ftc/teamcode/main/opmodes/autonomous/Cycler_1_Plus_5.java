@@ -48,7 +48,7 @@ public class Cycler_1_Plus_5 {
                     // latch cone
                     outtake.latchBarely();
 
-                    waitSeconds(0.1);
+                    waitSeconds(0.2);
                     if (Thread.interrupted()) return;
 
                     // move intake out
@@ -79,7 +79,7 @@ public class Cycler_1_Plus_5 {
                     outtake.guideStoreUp();
                     outtake.armTransfer();
 
-                    waitSeconds(0.1); // extra wait to avoid double possess, even though it technically won't be
+                    waitSeconds(0.3); // extra wait to avoid double possess, even though it technically won't be
                     if (Thread.interrupted()) return;
 
                     // grab next
@@ -115,17 +115,13 @@ public class Cycler_1_Plus_5 {
                     intake.armTransferAuto();
                     intake.vslideTransferAuto();
 
-                    waitForCondition(() -> {
-                        int pos = intake.getExtenderPosition();
-                        Log.d("WaitForCondition", "pos " + pos);
-                        return pos < 55;
-                    }, 0.4);
+                    waitSeconds(0.7);
                     if (Thread.interrupted()) return;
 
                     // drop cone onto holder
                     intake.clawRelease();
 
-                    waitSeconds(0.4); // 1+10 is using 0.3
+                    waitSeconds(0.5); // 1+10 is using 0.3
                 })
                 .build();
     }
