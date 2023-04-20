@@ -306,7 +306,7 @@ public class ManualDrive extends LinearOpMode {
             new Thread(() -> { // TODO: Better wait solution
                 sleep(250);
                 intake.armTransfer();
-                sleep(400);
+                sleep(500);
                 intake.clawRelease();
                 sleep(300);
                 intake.vslideDown();
