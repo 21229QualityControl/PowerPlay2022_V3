@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 @Autonomous(name = "🔴 ◢ Red Right Auto 1+10", group = "Auto 1+10", preselectTeleOp = "Manual Drive")
 public class AutoRedRight_1_Plus_10_Park extends AutoBase {
     public static CPose2d CYCLE_POSITION =        new CPose2d(FieldConstants.redRightConeStack.plus(new Vector2d(-33, 0)), Math.toRadians(0));
-    public static CPose2d SECOND_CYCLE_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(33, 0)), Math.toRadians(180));
+    public static CPose2d SECOND_CYCLE_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(34, 0)), Math.toRadians(180));
     public static double TURRET_ANGLE = -51;
     public static double SECOND_TURRET_ANGLE = 51;
 

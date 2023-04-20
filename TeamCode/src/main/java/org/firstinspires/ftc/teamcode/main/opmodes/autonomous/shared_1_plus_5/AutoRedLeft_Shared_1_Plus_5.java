@@ -14,8 +14,8 @@ import org.firstinspires.ftc.teamcode.util.data.CPose2d;
 
 @Config
 @Autonomous(name = "🔴 ◣ Red Left Auto Shared 1+5", group = "Auto Shared 1+5", preselectTeleOp = "Manual Drive")
-public class AutoRedLeft_Shared_1_Plus_5 extends AutoBase { // WARNING: Offset should be -1 to push closer to drivers
-    public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(33, 1)), Math.toRadians(180));
+public class AutoRedLeft_Shared_1_Plus_5 extends AutoBase {
+    public static CPose2d CYCLE_POSITION = new CPose2d(FieldConstants.redLeftConeStack.plus(new Vector2d(33, -1)), Math.toRadians(180));
     public static double TURRET_ANGLE = 51;
 
     private Cycler_1_Plus_5 cycleManager;
@@ -87,17 +87,17 @@ public class AutoRedLeft_Shared_1_Plus_5 extends AutoBase { // WARNING: Offset s
         switch (SIGNAL) {
             case 1:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(5, 3).plus(new Vector2d(-2, 1)))
+                        .strafeTo(FieldConstants.getSquareCenter(5, 3).plus(new Vector2d(-2, -1)))
                         .build());
                 break;
             default:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(4, 3).plus(new Vector2d(-0.5, 1)))
+                        .strafeTo(FieldConstants.getSquareCenter(4, 3).plus(new Vector2d(-0.5, -1)))
                         .build());
                 break;
             case 3:
                 follow(builder()
-                        .strafeTo(FieldConstants.getSquareCenter(3, 3).plus(new Vector2d(-0.5, 1)))
+                        .strafeTo(FieldConstants.getSquareCenter(3, 3).plus(new Vector2d(-0.5, -1)))
                         .build());
                 break;
         }
