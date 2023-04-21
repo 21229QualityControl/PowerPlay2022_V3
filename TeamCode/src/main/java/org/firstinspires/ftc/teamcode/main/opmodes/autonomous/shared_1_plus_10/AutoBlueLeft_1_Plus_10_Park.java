@@ -110,7 +110,15 @@ public class AutoBlueLeft_1_Plus_10_Park extends AutoBase { // WARNING: Offset s
         intake.clawClosed();
         intake.vslideLevel(3); // in case there's something in the intake
         follow(builder(CYCLE_POSITION.asPose2d())
+                .executeSync(() -> {
+                    // disable outtake motors and make outtake arm vertical just in case we're stuck on the pole
+                    outtake.getTurret().getMotor().setMotorDisable();
+                    outtake.getSlide().getMainMotor().setMotorDisable();
+                    outtake.getSlide().getSecondMotor().setMotorDisable();
+                    outtake.armVertical();
+                })
                 .lineTo(new Vector2d(SECOND_CYCLE_POSITION.getX(), SECOND_CYCLE_POSITION.getY()))
+                .addTemporalMarker(0.1, () -> outtake.latchBarely()) // latch outtake so cone doesn't fall out
                 .turnTo(SECOND_CYCLE_POSITION.getHeading())
                 .setKeepPosition(true)
                 .waitSeconds(0.1)
@@ -118,6 +126,11 @@ public class AutoBlueLeft_1_Plus_10_Park extends AutoBase { // WARNING: Offset s
                 .build());
 
         Log.d("Autonomous", String.format("moveToSecondStack() Ended %.3f", getRuntime()));
+
+        // enable our outtake motors again
+        outtake.getTurret().getMotor().setMotorEnable();
+        outtake.getSlide().getMainMotor().setMotorEnable();
+        outtake.getSlide().getSecondMotor().setMotorEnable();
     }
 
     private void park() {
