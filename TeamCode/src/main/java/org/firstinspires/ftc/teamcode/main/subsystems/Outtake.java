@@ -46,9 +46,9 @@ public class Outtake {
 
     private static double LATCH_MIN = 0.28; // Guess (not that it matters)
     private static double LATCH_MAX = 0.85; // Guess
-    public static double LATCH_OPEN = 0.30;
-    public static double LATCH_BARELY = 0.74; // Just covers the bottom, does not apply pressure
-    public static double LATCH_ENGAGED = 0.84; // may disable the servo temporarily
+    public static double LATCH_OPEN = 0.38;
+    public static double LATCH_BARELY = 0.82; // Just covers the bottom, does not apply pressure
+    public static double LATCH_ENGAGED = 0.92; // may disable the servo temporarily
 
     private static double GUIDE_MIN = 0.17;
     private static double GUIDE_MAX = 0.86;
