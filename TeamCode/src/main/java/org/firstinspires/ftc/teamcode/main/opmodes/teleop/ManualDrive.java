@@ -73,6 +73,11 @@ public class ManualDrive extends LinearOpMode {
     public static double TURN_CONSTANT = 0.75;
     public static double AUTO_TRANSFER_COOLDOWN = 200; // ms
 
+    public static double BEACON_VSLIDE_POS = 0.38;
+    public static double BEACON_ARM_POS = 0.22;
+    public static double BEACON_ARM_TIMING = 450;
+    public static double BEACON_RELEASE_TIMING = 300;
+
     private Drivetrain drivetrain;
     private Roadrunner roadrunner;
     private Intake intake;
@@ -224,6 +229,7 @@ public class ManualDrive extends LinearOpMode {
         List<Double> vels = drivetrain.getMotorPowers();
         Dashboard.packet.put("Battery Voltage", hub.getVoltage());
         Dashboard.packet.put("Runtime", smartGameTimer.seconds());
+        Dashboard.packet.put("Turret angle", outtake.getTurretAngle());
         telemetry.addData("Time left", smartGameTimer.formattedString() + " (" + smartGameTimer.status() + ")");
         telemetry.addData("Turret Angle", outtake.getTurretAngle() + " -> " + outtake.getTurretTarget());
         telemetry.addData("Outtake Pos", outtake.getSlidePosition() + " -> " + outtake.getSlideTarget());
@@ -313,6 +319,26 @@ public class ManualDrive extends LinearOpMode {
                 sleep(500);
                 intake.clawRelease();
                 sleep(300);
+                intake.vslideDown();
+                if (!intake.isArmOut()) intake.armStore();
+            }).start();
+        }
+
+        // Transfer Beacon (Hold A)
+        if (g1.aLongOnce()) {
+            intake.setExtenderMaxPower(0.9);
+            intake.extendStore();
+            intake.clawGrab();
+            outtake.turretCenter();
+            outtake.armTransfer();
+            intake.setVSlidePosition(BEACON_VSLIDE_POS);
+
+            new Thread(() -> { // TODO: Better wait solution
+                if (!intake.isExtenderIn()) sleep(250);
+                intake.setArmPosition(BEACON_ARM_POS);
+                sleep((long) BEACON_ARM_TIMING);
+                intake.clawRelease();
+                sleep((long) BEACON_RELEASE_TIMING);
                 intake.vslideDown();
                 if (!intake.isArmOut()) intake.armStore();
             }).start();
@@ -410,10 +436,10 @@ public class ManualDrive extends LinearOpMode {
             }
         }
 
-        // Auto stack cycle
-        if (g1.aLongOnce()) {
-            autoStackCycle();
-        }
+//        // Auto stack cycle (Has been disabled)
+//        if (g1.aLongOnce()) {
+//            autoStackCycle();
+//        }
     }
 
     private void outtakeControls() {

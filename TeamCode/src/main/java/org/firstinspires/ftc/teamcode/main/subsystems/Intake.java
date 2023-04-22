@@ -229,6 +229,13 @@ public class Intake {
 
     // Some state checks
     /**
+     * @return is the extender completely in the robot
+     */
+    public boolean isExtenderIn() {
+        return extender.getCurrentPosition() < EXTENDER_STORED_POS + 10;
+    }
+
+    /**
      * @return is the arm down in an intaking position
      */
     public boolean isArmFlat() {
