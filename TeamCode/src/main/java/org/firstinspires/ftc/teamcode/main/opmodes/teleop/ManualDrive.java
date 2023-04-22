@@ -431,10 +431,11 @@ public class ManualDrive extends LinearOpMode {
                 if (intake.isArmBlockingOuttake()) intake.armStore();
             }
 
+            if (outtake.getSlidePosition() < 50 && !outtake.isArmOut()) outtake.slideHigh();
+            else outtake.setSlidePosition(Outtake.SLIDE_HIGH + 50);
+
             outtake.setTurretAngle(raisedTurretAngle);
             outtake.raisePrep();
-            if (outtake.getSlidePosition() < 50) outtake.slideHigh();
-            else outtake.setSlidePosition(Outtake.SLIDE_HIGH + 50);
         }
 
         // Outtake mid (dpad right)
@@ -451,11 +452,12 @@ public class ManualDrive extends LinearOpMode {
                 if (intake.isArmBlockingOuttake()) intake.armStore();
             }
 
+            if (outtake.getSlidePosition() < 50 && !outtake.isArmOut()) outtake.slideMid();
+            else outtake.setSlidePosition(Outtake.SLIDE_MID + 50);
+
             raisedTurretAngle = 0;
             outtake.setTurretAngle(raisedTurretAngle);
             outtake.raisePrep();
-            if (outtake.getSlidePosition() < 50) outtake.slideMid();
-            else outtake.setSlidePosition(Outtake.SLIDE_MID + 50);
         }
 
         // Outtake low (dpad down)
