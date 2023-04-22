@@ -274,8 +274,12 @@ public class ManualDrive extends LinearOpMode {
             intake.clawGrab();
         }
         if (g1.bOnce()) { // release
-            if (intake.isArmFlat() || (intake.isArmOut() && !intake.isClawClosed())) intake.clawWide();
-            else intake.clawRelease();
+            if (intake.isArmOut()) {
+                if (intake.isClawOpen()) intake.clawRelease();
+                else intake.clawWide();
+            } else {
+                intake.clawRelease();
+            }
         }
 
 //        // Auto transfer
