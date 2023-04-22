@@ -240,10 +240,10 @@ public class ManualDrive extends LinearOpMode {
 
     private void move() {
         // Toggle slow mode, or turn off keepPosition if it is on
-        if (g1.leftStickButtonOnce()) {
-            if (keepPosition) keepPosition = false;
-            else isSlow = !isSlow;
-        }
+//        if (g1.leftStickButtonOnce()) {
+//            if (keepPosition) keepPosition = false;
+//            else isSlow = !isSlow;
+//        }
 
         // Toggle keep position mode
         if (g1.backOnce()) {
