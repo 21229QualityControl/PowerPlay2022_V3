@@ -50,7 +50,7 @@ public class Intake {
 
     private static double VSLIDE_MIN = 0.27;
     private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
-    public static double VSLIDE_TRANSFER_POS = 0.4;
+    public static double VSLIDE_TRANSFER_POS = 0.38;
     public static double VSLIDE_TRANSFER_AUTO_POS = 0.44;
     public static double VSLIDE_LVL1_POS = 0.27;
     public static double VSLIDE_LVL2_POS = 0.34;

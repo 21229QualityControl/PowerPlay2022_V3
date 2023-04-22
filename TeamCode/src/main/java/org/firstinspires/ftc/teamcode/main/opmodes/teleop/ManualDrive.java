@@ -316,29 +316,9 @@ public class ManualDrive extends LinearOpMode {
             new Thread(() -> { // TODO: Better wait solution
                 if (!intake.isExtenderIn()) sleep(250);
                 intake.armTransfer();
-                sleep(500);
+                sleep(450);
                 intake.clawRelease();
                 sleep(300);
-                intake.vslideDown();
-                if (!intake.isArmOut()) intake.armStore();
-            }).start();
-        }
-
-        // Transfer Beacon (Hold A)
-        if (g1.aLongOnce()) {
-            intake.setExtenderMaxPower(0.9);
-            intake.extendStore();
-            intake.clawGrab();
-            outtake.turretCenter();
-            outtake.armTransfer();
-            intake.setVSlidePosition(BEACON_VSLIDE_POS);
-
-            new Thread(() -> { // TODO: Better wait solution
-                if (!intake.isExtenderIn()) sleep(250);
-                intake.setArmPosition(BEACON_ARM_POS);
-                sleep((long) BEACON_ARM_TIMING);
-                intake.clawRelease();
-                sleep((long) BEACON_RELEASE_TIMING);
                 intake.vslideDown();
                 if (!intake.isArmOut()) intake.armStore();
             }).start();
