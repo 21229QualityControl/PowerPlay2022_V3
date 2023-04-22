@@ -468,13 +468,15 @@ public class ManualDrive extends LinearOpMode {
             outtake.armFlatOut();
             outtake.slideLow();
             outtake.guideRetractDown();
+
+            if (!outtake.isSlideMagnetPresent()) scheduleSlideEncoderReset = true;
         }
 
         // Score and retract (A)
         if (g2.aOnce()) {
             outtake.latchOpen();
             outtake.guideRetractDown();
-            if (!outtake.isSlideDown() || outtake.getSlidePosition() > 10) scheduleSlideEncoderReset = true;
+            if (!outtake.isSlideMagnetPresent()) scheduleSlideEncoderReset = true;
             new Thread(() -> { // TODO: Better wait solution
                 sleep(150);
                 outtake.store();
@@ -492,6 +494,7 @@ public class ManualDrive extends LinearOpMode {
         if (g2.bOnce()) {
             outtake.guideRetractDown();
             outtake.armTransfer();
+            if (!outtake.isSlideMagnetPresent()) scheduleSlideEncoderReset = true;
         }
 
         // Turret presets (Bumpers and X)
