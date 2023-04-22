@@ -494,6 +494,8 @@ public class ManualDrive extends LinearOpMode {
 
         // Move guide and arm back (B)
         if (g2.bOnce()) {
+            outtake.turretCenter();
+            outtake.slideStore();
             outtake.guideRetractDown();
             outtake.armTransfer();
             if (!outtake.isSlideMagnetPresent()) scheduleSlideEncoderReset = true;
