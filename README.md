@@ -1,17 +1,17 @@
-# Road Runner Quickstart
+# About this repo
 
-An example FTC project using [Road Runner](https://github.com/acmerobotics/road-runner). **Note:** Road Runner is in alpha and many of its APIs are incubating.
+This is the codebase for our V3 robot, the robot that went to and won worlds for the 2022-2023 Power Play season of First Tech Challenge.
 
-## Installation
+## Credits
 
-For more detailed instructions on getting Road Runner setup in your own project, see the [Road Runner README](https://github.com/acmerobotics/road-runner#core).
+This project was built off of and heavily modified from the [Roadrunner Quickstart](https://github.com/acmerobotics/road-runner-quickstart).
 
-1. Download or clone this repo with `git clone https://github.com/acmerobotics/road-runner-quickstart`.
+It also uses the [FTC Dashboard](https://github.com/acmerobotics/ftc-dashboard) for testing purposes.
 
-1. Open the project in Android Studio and build `TeamCode` like any other `ftc_app` project.
+## File structure
 
-1. If you have trouble with multidex, enable proguard by changing `useProguard` to `true` in `build.common.gradle`.
+Every piece of code is under the "TeamCode/src/main/.../teamcode" directory.
 
-## Documentation
+Roadrunner related code has been refactored under it's own folder "/roadrunner", though many new classes were added to handle new custom developed features.
 
-Check out the new [online quickstart documentation](https://acme-robotics.gitbook.io/road-runner/quickstart/introduction).
+Everything else should be self-explanatory.
