@@ -68,9 +68,9 @@ import java.util.List;
 @TeleOp(group = "Drive", name = "Manual Drive")
 public class ManualDrive extends LinearOpMode {
     public static double SLOW_SPEED = 0.4;
-    public static double SLOW_TURN = 0.2;
+    public static double SLOW_TURN = 0.3;
     public static double SPEED_CONSTANT = 0.9;
-    public static double TURN_CONSTANT = 0.75;
+    public static double TURN_CONSTANT = 0.9;
     public static double AUTO_TRANSFER_COOLDOWN = 200; // ms
 
     public static double BEACON_VSLIDE_POS = 0.38;
