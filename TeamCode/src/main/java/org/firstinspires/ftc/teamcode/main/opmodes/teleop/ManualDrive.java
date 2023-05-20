@@ -602,10 +602,14 @@ public class ManualDrive extends LinearOpMode {
         }
     }
 
-    private void showGameLights() { // TODO: Implement
+    private void showGameLights() {
         // Custom light patterns when resetting an encoder, running automation, sensors activating, etc.
         // These are lower priority than the patterns in warnings()
-        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+        if (outtake.isJunctionInGuide() && Math.abs(outtake.getGuidePosition() - Outtake.GUIDE_RETRACT_DOWN) > 0.01) { // If guide is up & junction in guide, display
+            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+        } else {
+            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+        }
     }
 
     private void autoStackControls() {

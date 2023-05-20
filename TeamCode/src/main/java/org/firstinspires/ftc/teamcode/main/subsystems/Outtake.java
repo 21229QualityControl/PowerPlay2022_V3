@@ -294,4 +294,8 @@ public class Outtake {
     public boolean isSlideDown() {
         return slideSensor.isMagnetPresent() && Math.abs(slide.getVelocity()) < 3 && slide.getTargetPosition() < 5;
     }
+
+    public boolean isJunctionInGuide() {
+        return guideSensor.isBeamBroken();
+    }
 }
