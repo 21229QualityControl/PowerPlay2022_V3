@@ -574,7 +574,9 @@ public class ManualDrive extends LinearOpMode {
 
     private void warnings() {
         // CAUTION: The rules prohibit flashing at a frequency faster than one blink per second
-        if (isBetween(timeLeft(), 65, 75)) { // 75-70; start owning junctions
+        if (outtake.isJunctionInGuide() && Math.abs(outtake.getGuidePosition() - Outtake.GUIDE_RETRACT_DOWN) > 0.01) { // If guide is up & junction in guide, display
+            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+        } else if (isBetween(timeLeft(), 65, 75)) { // 75-70; start owning junctions
             led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
             if (!warning1) {
                 g1.rumbleBlips(3);
@@ -606,11 +608,7 @@ public class ManualDrive extends LinearOpMode {
     private void showGameLights() {
         // Custom light patterns when resetting an encoder, running automation, sensors activating, etc.
         // These are lower priority than the patterns in warnings()
-        if (outtake.isJunctionInGuide() && Math.abs(outtake.getGuidePosition() - Outtake.GUIDE_RETRACT_DOWN) > 0.01) { // If guide is up & junction in guide, display
-            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
-        } else {
-            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
-        }
+         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
     }
 
     private void autoStackControls() {
