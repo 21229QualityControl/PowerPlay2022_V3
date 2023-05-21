@@ -476,7 +476,7 @@ public class ManualDrive extends LinearOpMode {
             outtake.armFlatOut();
             outtake.slideLow();
             //outtake.guideRetractDown();
-            outtake.guideFlatOut();
+            outtake.guideLow();
 
             if (!outtake.isSlideMagnetPresent()) scheduleSlideEncoderReset = true;
         }

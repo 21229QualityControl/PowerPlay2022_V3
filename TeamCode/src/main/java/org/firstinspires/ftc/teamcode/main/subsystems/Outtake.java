@@ -46,13 +46,14 @@ public class Outtake {
 
     private static double LATCH_MIN = 0.28; // Guess (not that it matters)
     private static double LATCH_MAX = 0.85; // Guess
-    public static double LATCH_OPEN = 0.25;
-    public static double LATCH_BARELY = 0.59; // Just covers the bottom, does not apply pressure
-    public static double LATCH_ENGAGED = 0.98; // may disable the servo temporarily
+    public static double LATCH_OPEN = 0.64;
+    public static double LATCH_BARELY = 0.48; // Just covers the bottom, does not apply pressure
+    //public static double LATCH_ENGAGED = 0.98; // may disable the servo temporarily
 
     private static double GUIDE_MIN = 0.17;
     private static double GUIDE_MAX = 0.86;
     public static double GUIDE_FLAT_OUT = 0.5;
+    public static double GUIDE_LOW = 0.55;
     public static double GUIDE_RETRACT_DOWN = 0.83;
     public static double GUIDE_STORE_UP = 0.83; // 0.17 actually up
     public static double GUIDE_INIT = 0.83;
@@ -71,7 +72,7 @@ public class Outtake {
         this.turret = new AngleMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeTurret"), TURRET_TICKS_PER_REV, TURRET_PID);
         this.slide = new DualMotorWithPID(HardwareCreator.createMotor(hardwareMap, "outtakeSlide1"), HardwareCreator.createMotor(hardwareMap, "outtakeSlide2"), true,
                 SLIDE_PID, (x, y) -> (x > 50 ? 0.10 : 0.0)); // Feedforward, apply power of 0.10 when pos>50
-        this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
+        this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.GOBILDA);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
         this.guideSensor = new BeamBreakSensor(hardwareMap, "guideBeamBreak");
@@ -84,7 +85,7 @@ public class Outtake {
         this.turret = previousOuttake.turret;
         this.slide = previousOuttake.slide;
         this.slide.setDirection(DcMotorSimple.Direction.FORWARD);
-        this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.DEFAULT);
+        this.latch = HardwareCreator.createServo(hardwareMap, "outtakeLatch", HardwareCreator.ServoType.GOBILDA);
         this.guide = HardwareCreator.createServo(hardwareMap, "outtakeGuide", HardwareCreator.ServoType.GOBILDA);
         this.arm = HardwareCreator.createServo(hardwareMap, "outtakeArm", HardwareCreator.ServoType.AXON);
         this.guideSensor = new BeamBreakSensor(hardwareMap, "guideBeamBreak");
@@ -139,9 +140,9 @@ public class Outtake {
     public void latchBarely() {
         this.latch.setPosition(LATCH_BARELY);
     }
-    public void latchEngaged() {
+    /*public void latchEngaged() {
         this.latch.setPosition(LATCH_ENGAGED);
-    }
+    }*/
     public double getLatchPosition() {
         return this.latch.getPosition();
     }
@@ -152,6 +153,9 @@ public class Outtake {
     }
     public void guideFlatOut() {
         guide.setPosition(GUIDE_FLAT_OUT);
+    }
+    public void guideLow() {
+        guide.setPosition(GUIDE_LOW);
     }
     public void guideStoreUp() {
         guide.setPosition(GUIDE_STORE_UP);
