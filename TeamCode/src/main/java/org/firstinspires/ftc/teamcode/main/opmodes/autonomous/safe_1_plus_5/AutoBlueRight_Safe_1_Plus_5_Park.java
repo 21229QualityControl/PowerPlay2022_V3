@@ -56,9 +56,7 @@ public class AutoBlueRight_Safe_1_Plus_5_Park extends AutoBase {
     private void moveOver() {
         Log.d("Autonomous", String.format("moveOver() Start %.3f", getRuntime()));
         follow(builder()
-                .lineTo(new Vector2d(getStartPose().getX(), getStartPose().getY()-2))
-                .lineTo(new Vector2d(SCORING_POSITION.getX()-3, getStartPose().getY()-2))
-                .lineToLinearHeading(new Pose2d(SCORING_POSITION.getX()-3, SCORING_POSITION.getY(), getStartPose().getHeading()))
+                .lineTo(new Vector2d(getStartPose().getX(), SCORING_POSITION.getY()))
                 .turnTo(SCORING_POSITION.getHeading())
                 .build());
 
