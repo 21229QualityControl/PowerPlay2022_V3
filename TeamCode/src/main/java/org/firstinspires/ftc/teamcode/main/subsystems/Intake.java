@@ -57,9 +57,9 @@ public class Intake {
     public static double VSLIDE_LVL3_POS = 0.39;
     public static double VSLIDE_LVL4_POS = 0.45;
     public static double VSLIDE_LVL5_POS = 0.51;
-    public static double VSLIDE_CLEAR_LVL0_POS = 0.49; // Lift cone off the ground
-    public static double VSLIDE_CLEAR_LVL1_POS = 0.49; // Lift cone above a 1 stack
-    public static double VSLIDE_CLEAR_LVL2_POS = 0.53; // Lift cone above a 2 stack
+    public static double VSLIDE_CLEAR_LVL0_POS = 0.61; // Lift cone off the ground
+    public static double VSLIDE_CLEAR_LVL1_POS = 0.61; // Lift cone above a 1 stack
+    public static double VSLIDE_CLEAR_LVL2_POS = 0.61; // Lift cone above a 2 stack
     public static double VSLIDE_CLEAR_LVL3_POS = 0.61; // Lift cone above a 3 stack
     public static double VSLIDE_CLEAR_LVL4_POS = 0.61; // Lift cone above a 4 stack
 
