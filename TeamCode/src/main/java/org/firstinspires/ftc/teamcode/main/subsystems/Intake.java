@@ -41,12 +41,12 @@ public class Intake {
     public static double ARM_TRANSFER_AUTO_POS = 0.20;
     public static double ARM_ANGLED_DEPOSIT_POS = 0.42; // Claw tilted for front deposit on low junction
 
-    private static double CLAW_MIN = 0.025;
-    private static double CLAW_MAX = 0.30;
-    public static double CLAW_CLOSED_POS = 0.30; // closed completely
-    public static double CLAW_GRAB_POS = 0.30;
-    public static double CLAW_RELEASE_POS = 0.13; // open quite wide but can still fit through intake
-    public static double CLAW_WIDE_POS = 0.025;
+    private static double CLAW_MIN = 0.15;
+    private static double CLAW_MAX = 0.67;
+    public static double CLAW_CLOSED_POS = 0.15; // closed completely
+    public static double CLAW_GRAB_POS = 0.15;
+    public static double CLAW_RELEASE_POS = 0.43; // open quite wide but can still fit through intake
+    public static double CLAW_WIDE_POS = 0.67;
 
     private static double VSLIDE_MIN = 0.27;
     private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
@@ -260,14 +260,14 @@ public class Intake {
      * @return is the claw open wide for grabbing
      */
     public boolean isClawOpen() {
-        return claw.getPosition() < CLAW_WIDE_POS + 0.01;
+        return Math.abs(claw.getPosition() - CLAW_WIDE_POS) < 0.01;
     }
 
     /**
      * @return is the claw closed for grabbing
      */
     public boolean isClawClosed() {
-        return claw.getPosition() > CLAW_GRAB_POS - 0.01;
+        return Math.abs(claw.getPosition() - CLAW_GRAB_POS) < 0.01;
     }
 
     /**
