@@ -129,13 +129,9 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
 
                     // start arm
                     intake.armTransferAuto();
-                    if (stackLayer != 5) {
-                        waitSecondsSimple(0.20);
-                    } else { // top layer receives special treatment
-                        waitSecondsSimple(0.10);
-                        intake.extenderTo(intake.getExtenderTarget() - 40);
-                        waitSecondsSimple(0.20); // wait extra for top layer
-                    }
+                    waitSecondsSimple(0.10);
+                    intake.extenderTo(intake.getExtenderTarget() - 40);
+                    waitSecondsSimple(0.20); // wait extra for top layer
                     if (Thread.interrupted()) return;
 
                     // pull back soon after
