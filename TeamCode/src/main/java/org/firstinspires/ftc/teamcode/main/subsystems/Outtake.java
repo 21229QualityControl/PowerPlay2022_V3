@@ -38,11 +38,11 @@ public class Outtake {
 
     private static double ARM_MIN = 0;
     private static double ARM_MAX = 0.81;
-    public static double ARM_FLAT_OUT = 0.06;
-    public static double ARM_TILT_OUT = 0.09;
-    public static double ARM_VERTICAL = 0.33; // might be unnecessary
-    public static double ARM_TRANSFER = 0.72;
-    public static double ARM_TRANSFER_AUTO_POS = 0.72;
+    public static double ARM_FLAT_OUT = 0.065;
+    public static double ARM_TILT_OUT = 0.095;
+    public static double ARM_VERTICAL = 0.335;                                  // might be unnecessary
+    public static double ARM_TRANSFER = 0.725;
+    public static double ARM_TRANSFER_AUTO_POS = 0.725;
 
     private static double LATCH_MIN = 0.28; // Guess (not that it matters)
     private static double LATCH_MAX = 0.85; // Guess
