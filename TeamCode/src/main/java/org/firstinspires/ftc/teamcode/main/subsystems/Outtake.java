@@ -38,16 +38,16 @@ public class Outtake {
 
     private static double ARM_MIN = 0;
     private static double ARM_MAX = 0.81;
-    public static double ARM_FLAT_OUT = 0.065;
-    public static double ARM_TILT_OUT = 0.095;
-    public static double ARM_VERTICAL = 0.335;                                  // might be unnecessary
-    public static double ARM_TRANSFER = 0.725;
+    public static double ARM_FLAT_OUT = 0.06;
+    public static double ARM_TILT_OUT = 0.09;
+    public static double ARM_VERTICAL = 0.33;                                  // might be unnecessary
+    public static double ARM_TRANSFER = 0.72;
     public static double ARM_TRANSFER_AUTO_POS = 0.725;
 
     private static double LATCH_MIN = 0.28; // Guess (not that it matters)
     private static double LATCH_MAX = 0.85; // Guess
     public static double LATCH_OPEN = 0.64;
-    public static double LATCH_BARELY = 0.48; // Just covers the bottom, does not apply pressure
+    public static double LATCH_BARELY = 0.4; // Just covers the bottom, does not apply pressure
     //public static double LATCH_ENGAGED = 0.98; // may disable the servo temporarily
 
     private static double GUIDE_MIN = 0.17;

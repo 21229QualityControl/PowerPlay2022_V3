@@ -100,6 +100,9 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
                     // drop cone
                     outtake.latchOpen();
                     outtake.guideRetractDown();
+                    if (nextLayerStack == 0) {
+                        intake.clawClosed(); // Fix issue where claw grabbed outtake
+                    }
 
                     waitSecondsSimple(0.25);
                     if (Thread.interrupted()) return;
