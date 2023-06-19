@@ -36,17 +36,18 @@ public class Intake {
     private static double ARM_MAX = 0.585;
     public static double ARM_PARKING_POS = 0.22; // Arm inside robot, slightly angled in
     public static double ARM_STORED_POS = 0.240; // Arm as vertical as possible (without blocking outtake)
-    public static double ARM_INTAKING_POS = 0.554; // Claw leveled
+    public static double ARM_INTAKING_POS = 0.56; // Claw leveled
     public static double ARM_TRANSFER_POS = 0.22;
     public static double ARM_TRANSFER_AUTO_POS = 0.20;
     public static double ARM_ANGLED_DEPOSIT_POS = 0.42; // Claw tilted for front deposit on low junction
+    public static double ARM_TWO_CONE = 0.32;
 
-    private static double CLAW_MIN = 0.15;
-    private static double CLAW_MAX = 0.67;
-    public static double CLAW_CLOSED_POS = 0.15; // closed completely
-    public static double CLAW_GRAB_POS = 0.15;
-    public static double CLAW_RELEASE_POS = 0.43; // open quite wide but can still fit through intake
-    public static double CLAW_WIDE_POS = 0.67;
+    private static double CLAW_MIN = 0.55;
+    private static double CLAW_MAX = 1;
+    public static double CLAW_CLOSED_POS = 0.55; // closed completely
+    public static double CLAW_GRAB_POS = 0.55;
+    public static double CLAW_RELEASE_POS = 0.88; // open quite wide but can still fit through intake
+    public static double CLAW_WIDE_POS = 1;
 
     private static double VSLIDE_MIN = 0.27;
     private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
@@ -138,6 +139,9 @@ public class Intake {
     }
     public void armPark() {
         this.arm.setPosition(ARM_PARKING_POS);
+    }
+    public void armTwoCone() {
+        this.arm.setPosition(ARM_TWO_CONE);
     }
     public double getArmPosition() {
         return this.arm.getPosition();

@@ -255,7 +255,7 @@ public class ManualDrive extends LinearOpMode {
         // Movement inputs
         double input_x = Math.pow(-g1.left_stick_y, 3) * (g1.leftStickButton() ? 1 : (isSlow ? SLOW_SPEED : SPEED_CONSTANT));
         double input_y = Math.pow(-g1.left_stick_x, 3) * (g1.leftStickButton() ? 1 : (isSlow ? SLOW_SPEED : SPEED_CONSTANT));
-        double input_turn = (g1.left_trigger - g1.right_trigger) * TURN_CONSTANT;
+        double input_turn = Math.pow(g1.left_trigger - g1.right_trigger, 3) * TURN_CONSTANT;
 
         if (g1.leftBumper()) input_turn += SLOW_TURN;
         if (g1.rightBumper()) input_turn -= SLOW_TURN;
@@ -414,6 +414,8 @@ public class ManualDrive extends LinearOpMode {
             if (intake.isArmOut() && intake.isVSlideUp()) {
                 intake.vslideLiftLevel(stacknum);
             }
+        } else if (g1.dpadLeftOnce()) {
+            intake.armTwoCone();
         }
 
 //        // Auto stack cycle (Has been disabled)
