@@ -160,7 +160,7 @@ public class AutoBlueRight_Safe_1_Plus_5_Park extends AutoBase {
         Log.d("Autonomous", String.format("park() Start %.3f", getRuntime()));
         outtake.setTurretAngle(0);
         outtake.store();
-        outtake.setArmPosition(Outtake.ARM_TRANSFER + 0.04);
+        outtake.setArmPosition(Outtake.ARM_TRANSFER - 0.1);
         intake.setArmPosition(Intake.ARM_PARKING_POS - 0.02);
         intake.extendStore();
         intake.clawClosed();
