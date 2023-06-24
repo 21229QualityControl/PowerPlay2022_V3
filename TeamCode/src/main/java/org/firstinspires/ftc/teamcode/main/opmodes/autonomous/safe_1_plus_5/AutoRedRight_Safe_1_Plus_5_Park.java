@@ -92,7 +92,7 @@ public class AutoRedRight_Safe_1_Plus_5_Park extends AutoBase {
                     outtake.armTiltOut();
                     outtake.guideFlatOut();
                     outtake.raiseHigh();
-                    outtake.setTurretAngle(TURRET_ANGLE);
+                    outtake.setTurretAngle(nextLayerStack != 5 ? TURRET_ANGLE : TURRET_ANGLE * 0.7);
                 })
                 .addTemporalMarker(1, -0.4, () -> {
                     outtake.latchBarely();

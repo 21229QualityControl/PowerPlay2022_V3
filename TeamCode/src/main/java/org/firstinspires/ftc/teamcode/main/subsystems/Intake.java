@@ -42,12 +42,12 @@ public class Intake {
     public static double ARM_ANGLED_DEPOSIT_POS = 0.42; // Claw tilted for front deposit on low junction
     public static double ARM_TWO_CONE = 0.32;
 
-    private static double CLAW_MIN = 0.34;
-    private static double CLAW_MAX = 0.60;
+    private static double CLAW_MIN = 0.38;
+    private static double CLAW_MAX = 0.88;
     public static double CLAW_CLOSED_POS = 0.38; // closed completely
     public static double CLAW_GRAB_POS = 0.38;
-    public static double CLAW_RELEASE_POS = 0.5; // open quite wide but can still fit through intake
-    public static double CLAW_WIDE_POS = 0.60;
+    public static double CLAW_RELEASE_POS = 0.7; // open quite wide but can still fit through intake
+    public static double CLAW_WIDE_POS = 0.88;
 
     private static double VSLIDE_MIN = 0.27;
     private static double VSLIDE_MAX = 0.61; // 0.62 will lock it at top
