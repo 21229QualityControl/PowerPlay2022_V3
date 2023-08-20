@@ -319,8 +319,6 @@ public class ManualDrive extends LinearOpMode {
                         pidHeading -= Math.toRadians(360);
                     }
                 }
-                telemetry.addData("TARGET HEADING", Math.toDegrees(targetHeading));
-                telemetry.addData("PID HEADING", Math.toDegrees(pidHeading));
                 input_turn = Range.clip(headingController.update(pidHeading), -1, 1);
             }
 
