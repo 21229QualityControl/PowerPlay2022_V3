@@ -95,7 +95,7 @@ public class ManualDrive extends LinearOpMode {
 
     private GamePadController g1, g2;
     private double prevInputx, prevInputy, prevTurn, targetHeading = 0;
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0.5, 0.1, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(1, 0.25, 0.2);
     private PIDFController headingController = new PIDFController(HEADING_PID, 0, 0, 0);
 
     private boolean isSlow = false;
@@ -265,10 +265,16 @@ public class ManualDrive extends LinearOpMode {
 //        }
 
         // Toggle keep position mode
-        if (g1.backOnce()) {
+        if (g1.backLongOnce()) {
             keepPosition = !keepPosition;
             positionMaintainer.resetController();
             positionMaintainer.maintainPosition(roadrunner.getPoseEstimate());
+        }
+
+        // Reset angle
+        if (g1.backOnce()) {
+            roadrunner.setPoseEstimate(new Pose2d(0, 0, 0));
+            targetHeading = 0;
         }
 
         // Movement inputs
@@ -315,7 +321,7 @@ public class ManualDrive extends LinearOpMode {
                 }
                 telemetry.addData("TARGET HEADING", Math.toDegrees(targetHeading));
                 telemetry.addData("PID HEADING", Math.toDegrees(pidHeading));
-                input_turn = Range.clip(headingController.update(pidHeading), -0.5, 0.5);
+                input_turn = Range.clip(headingController.update(pidHeading), -1, 1);
             }
 
             // Rotate movement vector
