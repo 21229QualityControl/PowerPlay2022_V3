@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner.KEEP_POS
 import static org.firstinspires.ftc.teamcode.main.subsystems.Roadrunner.KEEP_POSITION_TRANSLATIONAL_PID;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
@@ -71,6 +73,7 @@ public class ManualDrive extends LinearOpMode {
     public static double SLOW_TURN = 0.3;
     public static double SPEED_CONSTANT = 0.9;
     public static double TURN_CONSTANT = 0.75;
+    public static double SLEW_RATE = 0.15;
     public static double AUTO_TRANSFER_COOLDOWN = 200; // ms
 
     public static double BEACON_VSLIDE_POS = 0.38;
@@ -91,6 +94,9 @@ public class ManualDrive extends LinearOpMode {
     private SmartGameTimer smartGameTimer;
 
     private GamePadController g1, g2;
+    private double prevInputx, prevInputy, prevTurn, targetHeading = 0;
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0.5, 0.1, 0);
+    private PIDFController headingController = new PIDFController(HEADING_PID, 0, 0, 0);
 
     private boolean isSlow = false;
     private boolean keepPosition = false;
@@ -119,6 +125,7 @@ public class ManualDrive extends LinearOpMode {
         drivetrain = new Drivetrain(hardwareMap, hub);
         roadrunner = new Roadrunner(hardwareMap, hub, drivetrain);
         roadrunner.setPoseEstimate(Memory.LAST_POSE);
+        targetHeading = roadrunner.getPoseEstimate().getHeading();
         intake = new Intake(hardwareMap);
         if (Memory.REMEMBERED_OUTTAKE != null) {
             outtake = new Outtake(hardwareMap, Memory.REMEMBERED_OUTTAKE);
@@ -235,7 +242,19 @@ public class ManualDrive extends LinearOpMode {
         telemetry.addData("Outtake Pos", outtake.getSlidePosition() + " -> " + outtake.getSlideTarget());
         telemetry.addData("Extender Pos", intake.getExtenderPosition() + " -> " + intake.getExtenderTarget());
         telemetry.addData("Power", "\n   %4.0f%% | %4.0f%% \n   %4.0f%% | %4.0f%%", vels.get(0)*100, vels.get(3)*100, vels.get(1)*100, vels.get(2)*100);
+        telemetry.addData("Position (deg)", Math.toDegrees(roadrunner.getPoseEstimate().getHeading()));
         telemetry.update();
+    }
+
+    private double slew(double input, double prev) {
+        if (SLEW_RATE < Math.abs(input - prev)) { // Can slew
+            if (input < prev) {
+                return prev - SLEW_RATE;
+            } else if (input > prev) {
+                return prev + SLEW_RATE;
+            }
+        }
+        return input; // Close enough that you can just use input
     }
 
     private void move() {
@@ -270,6 +289,35 @@ public class ManualDrive extends LinearOpMode {
 
             roadrunner.setDriveSignal(positionMaintainer.update(roadrunner.getPoseEstimate(), roadrunner.getPoseVelocity()));
         } else {
+            // Slew rate limiting
+            input_x = slew(input_x, prevInputx);
+            input_y = slew(input_y, prevInputy);
+            input_turn = slew(input_turn, prevTurn);
+
+            if (input_turn == 0 && prevTurn != 0) { // Need to start keeping position
+                targetHeading = roadrunner.getPoseEstimate().getHeading();
+            }
+
+            prevInputx = input_x;
+            prevInputy = input_y;
+            prevTurn = input_turn;
+
+            // Heading PID
+            if (input_turn == 0) {
+                headingController.setTargetPosition(targetHeading);
+                double pidHeading = roadrunner.getPoseEstimate().getHeading();
+                if (Math.abs(targetHeading - pidHeading) > Math.toRadians(180)) { // Clip to -180, 180 instead of 0, 360
+                    if ((targetHeading - pidHeading) > Math.toRadians(180)) {
+                        pidHeading += Math.toRadians(360);
+                    } else if ((targetHeading - pidHeading) < Math.toRadians(180)) {
+                        pidHeading -= Math.toRadians(360);
+                    }
+                }
+                telemetry.addData("TARGET HEADING", Math.toDegrees(targetHeading));
+                telemetry.addData("PID HEADING", Math.toDegrees(pidHeading));
+                input_turn = Range.clip(headingController.update(pidHeading), -0.5, 0.5);
+            }
+
             // Rotate movement vector
             Vector2d move = new Vector2d(input_x, input_y);
             move = move.rotated(-roadrunner.getPoseEstimate().getHeading());
