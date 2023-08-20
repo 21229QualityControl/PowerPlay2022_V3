@@ -270,7 +270,10 @@ public class ManualDrive extends LinearOpMode {
 
             roadrunner.setDriveSignal(positionMaintainer.update(roadrunner.getPoseEstimate(), roadrunner.getPoseVelocity()));
         } else {
-            roadrunner.setDrivePower(new Pose2d(input_x, input_y, input_turn));
+            // Rotate movement vector
+            Vector2d move = new Vector2d(input_x, input_y);
+            move = move.rotated(-roadrunner.getPoseEstimate().getHeading());
+            roadrunner.setDrivePower(new Pose2d(move.getX(), move.getY(), input_turn));
         }
     }
 
