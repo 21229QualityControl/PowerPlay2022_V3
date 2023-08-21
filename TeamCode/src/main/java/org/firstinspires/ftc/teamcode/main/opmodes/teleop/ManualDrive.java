@@ -319,7 +319,11 @@ public class ManualDrive extends LinearOpMode {
                         pidHeading -= Math.toRadians(360);
                     }
                 }
-                input_turn = Range.clip(headingController.update(pidHeading), -1, 1);
+                input_turn = Range.clip(headingController.update(pidHeading), -1, 1); // PID control
+                // Lower oscillations when turning and not strafing (strafing needs much more aggressive control than driving straight)
+                if (Math.abs(input_x) < 0.1) {
+                    input_turn *= Range.clip(input_y, 0.25, 1);
+                }
             }
 
             // Rotate movement vector
